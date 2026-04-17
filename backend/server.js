@@ -377,18 +377,16 @@ db.connect((err) => {
               ]
             ];
 
-            const insertQuery = 'INSERT INTO services (name, description, category, price, processing_time, requirements, image, form_path, form_name, form_fields) VALUES ?';
-            db.query(insertQuery, [seedServices], (insertErr) => {
-              if (insertErr) {
-                console.error('Failed to seed services:', insertErr);
-              } else {
-                console.log('Seeded default services');
-              }
+            const insertQuery = 'INSERT INTO services (name, description, category, price, processing_time, requirements, image, form_path, form_name, form_fields) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)';
+            seedServices.forEach(service => {
+              db.query(insertQuery, service, (insertErr) => {
+                if (insertErr) {
+                  console.error('Failed to seed services:', insertErr);
+                } else {
+                  console.log('Seeded default services');
+                }
+              });
             });
-          }
-        });
-      }
-    });
 
     db.query(createSouvenirsTable, (tableErr) => {
       if (tableErr) {
@@ -498,7 +496,7 @@ db.connect((err) => {
         announcement_id INTEGER NOT NULL,
         parent_comment_id INTEGER DEFAULT NULL,
         user_id VARCHAR(255) DEFAULT '0',
-        user VARCHAR(255) DEFAULT 'Guest',
+        "user" VARCHAR(255) DEFAULT 'Guest',
         text TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
