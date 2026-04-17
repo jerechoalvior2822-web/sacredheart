@@ -38,11 +38,13 @@ export function AdminMessages() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [activeCallUserId, setActiveCallUserId] = useState<number | null>(null);
   const [callDuration, setCallDuration] = useState(0);
+  const [retryCount, setRetryCount] = useState(0);
+  const maxRetries = 3;
 
   useEffect(() => {
     fetchAllMessages();
-    // Poll for new messages every 2 seconds
-    const interval = setInterval(fetchAllMessages, 2000);
+    // Poll for new messages every 5 seconds (increased from 2s to reduce network stress)
+    const interval = setInterval(fetchAllMessages, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -103,11 +105,24 @@ export function AdminMessages() {
       
       setPreviousUserMessageCount(totalUserMessages);
       setConversations(convos);
+      setError(''); // Clear error on success
+      setRetryCount(0); // Reset retry count
       if (convos.length > 0 && !selectedUserId) {
         setSelectedUserId(convos[0].userId);
       }
     } catch (err) {
-      setError((err as Error).message || 'Unable to load messages');
+      const errorMsg = (err as Error).message || 'Unable to load messages';
+      console.error('[AdminMessages] Error:', errorMsg);
+      
+      // Only show error if it's not a network error or if we've retried too many times
+      if (!errorMsg.includes('network') && !errorMsg.includes('ERR_')) {
+        setError(errorMsg);
+      }
+      
+      // Auto-retry on network errors
+      if (retryCount < maxRetries && (errorMsg.includes('network') || errorMsg.includes('ERR_'))) {
+        setRetryCount(prev => prev + 1);
+      }
     } finally {
       setLoading(false);
     }

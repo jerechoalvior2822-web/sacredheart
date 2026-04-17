@@ -30,6 +30,8 @@ export function Messages() {
   const [previousAdminMessageCount, setPreviousAdminMessageCount] = useState(0);
   const [isCallActive, setIsCallActive] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
+  const [retryCount, setRetryCount] = useState(0);
+  const maxRetries = 3;
 
   const handleInitiateCall = () => {
     setIsCallActive(true);
@@ -87,12 +89,25 @@ export function Messages() {
       
       setPreviousAdminMessageCount(adminMessageCount);
       setMessages(messagesArray);
+      setError(''); // Clear error on success
+      setRetryCount(0); // Reset retry count
       // Reset unread count when viewing messages
       if (notifications.unreadMessages > 0) {
         resetUnreadMessages();
       }
     } catch (err) {
-      setError((err as Error).message || 'Unable to load messages');
+      const errorMsg = (err as Error).message || 'Unable to load messages';
+      console.error('[Messages] Error:', errorMsg);
+      
+      // Only show error if it's not a network error or if we've retried too many times
+      if (!errorMsg.includes('network') && !errorMsg.includes('ERR_')) {
+        setError(errorMsg);
+      }
+      
+      // Auto-retry on network errors
+      if (retryCount < maxRetries && (errorMsg.includes('network') || errorMsg.includes('ERR_'))) {
+        setRetryCount(prev => prev + 1);
+      }
     } finally {
       setLoading(false);
     }
@@ -102,11 +117,11 @@ export function Messages() {
     fetchMessages();
   }, [user]);
 
-  // Poll for new messages every 2 seconds
+  // Poll for new messages every 5 seconds (increased from 2s to reduce network stress)
   useEffect(() => {
-    const interval = setInterval(fetchMessages, 2000);
+    const interval = setInterval(fetchMessages, 5000);
     return () => clearInterval(interval);
-  }, [user, previousAdminMessageCount, notifications.unreadMessages])
+  }, [user, previousAdminMessageCount, notifications.unreadMessages];
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
