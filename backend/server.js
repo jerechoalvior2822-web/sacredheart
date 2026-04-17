@@ -387,6 +387,10 @@ db.connect((err) => {
                 }
               });
             });
+          }
+        });
+      }
+    });
 
     db.query(createSouvenirsTable, (tableErr) => {
       if (tableErr) {
