@@ -630,7 +630,7 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ error: 'Email is already registered' });
     }
 
-    const insertQuery = 'INSERT INTO users (name, email, password_hash, phone, address, role, is_verified) VALUES ($1, $2, $3, $4, $5, $6, false)';
+    const insertQuery = 'INSERT INTO users (name, email, password_hash, phone, address, role, is_verified) VALUES ($1, $2, $3, $4, $5, $6, false) RETURNING id';
     db.query(insertQuery, [name, emailLower, passwordHash, phone || '', address || '', 'user'], async (insertErr, result) => {
       if (insertErr) {
         console.error('Error creating user:', insertErr);
@@ -906,12 +906,12 @@ app.get('/api/bookings/booked-dates', (req, res) => {
 // POST route to create a new booking
 app.post('/api/bookings', (req, res) => {
   const { user_id, service, date, time, status, documents, fee, payment_status, notes } = req.body;
-  const query = 'INSERT INTO bookings (user_id, service, date, time, status, documents, fee, payment_status, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)';
+  const query = 'INSERT INTO bookings (user_id, service, date, time, status, documents, fee, payment_status, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id';
   db.query(query, [user_id, service, date, time, status || 'pending', JSON.stringify(documents || []), fee || '$0', payment_status || 'pending', notes || ''], (err, result) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json({ id: result[0]?.id, message: 'Booking created successfully' });
+      res.json({ id: result.rows[0]?.id, message: 'Booking created successfully' });
     }
   });
 });
@@ -1029,7 +1029,7 @@ app.post('/api/announcements/:id/comments', (req, res) => {
       return res.status(500).json({ error: err.message });
     }
     const comment = {
-      id: result[0]?.id,
+      id: result.rows[0]?.id,
       announcementId: Number(id),
       parentCommentId: parentCommentId ? Number(parentCommentId) : null,
       user: String(user).trim(),
@@ -1200,12 +1200,12 @@ app.post('/api/announcements', upload.any(), (req, res) => {
 
   console.log('POST /api/announcements', { title, content, type, date, imagePath, hasFile: Boolean(file), bodyKeys: Object.keys(body) });
 
-  db.query('INSERT INTO announcements (title, content, type, date, image) VALUES ($1, $2, $3, $4, $5)', [title, content, type, date || null, imagePath], (err, result) => {
+  db.query('INSERT INTO announcements (title, content, type, date, image) VALUES ($1, $2, $3, $4, $5) RETURNING id', [title, content, type, date || null, imagePath], (err, result) => {
     if (err) {
       console.error('Error creating announcement:', err);
       return res.status(500).json({ error: err.message });
     }
-    res.json({ id: result[0]?.id, message: 'Announcement created successfully' });
+      res.json({ id: result.rows[0]?.id, message: 'Announcement created successfully' });
   });
 });
 
@@ -1221,12 +1221,12 @@ app.get('/api/donations', (req, res) => {
 
 app.post('/api/donations', (req, res) => {
   const { user_id, donation_type, amount, payment_method, message, proof_file_name } = req.body;
-  const query = 'INSERT INTO donations (user_id, donation_type, amount, payment_method, message, proof_file_name) VALUES ($1, $2, $3, $4, $5, $6)';
+  const query = 'INSERT INTO donations (user_id, donation_type, amount, payment_method, message, proof_file_name) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id';
   db.query(query, [user_id, donation_type, amount, payment_method, message || '', proof_file_name || ''], (err, result) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json({ id: result[0]?.id, message: 'Donation submitted successfully' });
+      res.json({ id: result.rows[0]?.id, message: 'Donation submitted successfully' });
     }
   });
 });
@@ -1291,7 +1291,7 @@ app.post('/api/services', upload.any(), (req, res) => {
   const parsedFormFields = parseJSONField(formFields);
   const file = Array.isArray(req.files) ? req.files.find((file) => file.fieldname === 'image') : null;
   const imagePath = file ? `/assets/uploads/${file.filename}` : (req.body?.image || '');
-  const query = 'INSERT INTO services (name, description, category, price, processing_time, requirements, image, form_path, form_name, form_fields) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)';
+  const query = 'INSERT INTO services (name, description, category, price, processing_time, requirements, image, form_path, form_name, form_fields) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id';
   db.query(
     query,
     [name, description, category, price, processingTime, JSON.stringify(parsedRequirements), imagePath, formPath || '', formName || '', JSON.stringify(parsedFormFields)],
@@ -1300,7 +1300,7 @@ app.post('/api/services', upload.any(), (req, res) => {
         console.error('Service create error:', err, { body: req.body, files: req.files });
         res.status(500).json({ error: err.message });
       } else {
-        res.json({ id: result[0]?.id, message: 'Service created successfully' });
+        res.json({ id: result.rows[0]?.id, message: 'Service created successfully' });
       }
     }
   );
@@ -1354,13 +1354,13 @@ app.post('/api/souvenirs', upload.any(), (req, res) => {
   const file = Array.isArray(req.files) ? req.files.find((file) => file.fieldname === 'image') : null;
   const imagePath = file ? `/assets/uploads/${file.filename}` : (req.body?.image || '');
   
-  const query = 'INSERT INTO souvenirs (name, description, price, stock, image) VALUES ($1, $2, $3, $4, $5)';
+  const query = 'INSERT INTO souvenirs (name, description, price, stock, image) VALUES ($1, $2, $3, $4, $5) RETURNING id';
   db.query(query, [name, description, price, stock, imagePath], (err, result) => {
     if (err) {
       console.error('Souvenir create error:', err, { body: req.body, files: req.files });
       res.status(500).json({ error: err.message });
     } else {
-      res.json({ id: result[0]?.id, message: 'Souvenir created successfully' });
+      res.json({ id: result.rows[0]?.id, message: 'Souvenir created successfully' });
     }
   });
 });
@@ -1416,7 +1416,7 @@ app.get('/api/mass-schedules', (req, res) => {
 
 app.post('/api/mass-schedules', (req, res) => {
   const { massDay, massTime, date, status, collectors, lectors, eucharisticMinisters, altarServers, choirLeader, ushers } = req.body;
-  const query = 'INSERT INTO mass_schedules (mass_day, mass_time, date, status, collectors, lectors, eucharistic_ministers, altar_servers, choir_leader, ushers) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)';
+  const query = 'INSERT INTO mass_schedules (mass_day, mass_time, date, status, collectors, lectors, eucharistic_ministers, altar_servers, choir_leader, ushers) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id';
   db.query(
     query,
     [massDay, massTime, date, status, JSON.stringify(collectors || []), JSON.stringify(lectors || []), JSON.stringify(eucharisticMinisters || []), JSON.stringify(altarServers || []), choirLeader || '', JSON.stringify(ushers || [])],
@@ -1424,7 +1424,7 @@ app.post('/api/mass-schedules', (req, res) => {
       if (err) {
         res.status(500).json({ error: err.message });
       } else {
-        res.json({ id: result[0]?.id, message: 'Mass schedule created successfully' });
+        res.json({ id: result.rows[0]?.id, message: 'Mass schedule created successfully' });
       }
     }
   );
@@ -1498,12 +1498,12 @@ app.get('/api/messages', (req, res) => {
 
 app.post('/api/messages', (req, res) => {
   const { user_id, sender, text } = req.body;
-  const query = 'INSERT INTO messages (user_id, sender, text) VALUES ($1, $2, $3)';
+  const query = 'INSERT INTO messages (user_id, sender, text) VALUES ($1, $2, $3) RETURNING id';
   db.query(query, [user_id, sender, text], (err, result) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json({ id: result[0]?.id, message: 'Message saved successfully' });
+      res.json({ id: result.rows[0]?.id, message: 'Message saved successfully' });
     }
   });
 });
