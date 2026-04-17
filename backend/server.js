@@ -878,7 +878,12 @@ app.get('/api/bookings', (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json(results || []);
+      // Parse documents field to ensure it's always an array
+      const formatted = (results || []).map(booking => ({
+        ...booking,
+        documents: parseJSONField(booking.documents) || []
+      }));
+      res.json(formatted);
     }
   });
 });
@@ -896,7 +901,12 @@ app.get('/api/bookings/:id', (req, res) => {
     } else if (!results || results.length === 0) {
       res.status(404).json({ error: 'Booking not found' });
     } else {
-      res.json(results[0]);
+      // Parse documents field to ensure it's always an array
+      const booking = results[0];
+      res.json({
+        ...booking,
+        documents: parseJSONField(booking.documents) || []
+      });
     }
   });
 });
