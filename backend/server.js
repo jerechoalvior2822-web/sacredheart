@@ -676,17 +676,13 @@ app.post('/api/auth/verify-email', (req, res) => {
         return res.status(400).json({ error: 'OTP expired' });
       }
 
-      db.query('UPDATE users SET is_verified = true WHERE email = $1', [emailLower], (updateErr) => {
+      db.query('UPDATE users SET is_verified = truerue WHERE email = $1', [emailLower], (updateErr) => {
         if (updateErr) {
           console.error('Error verifying user:', updateErr);
           return res.status(500).json({ error: updateErr.message });
         }
 
-        db.query('UPDATE email_otps SET used = 1 WHERE id = ?', [otpRow.id], (usedErr) => {
-          if (usedErr) {
-            console.error('Error marking OTP used:', usedErr);
-          }
-          res.json({ message: 'Email verified successfully' });
+        db.query('UPDATE email_otps SET used = true WHERE id = $1', [otpRow.id], (usedErr) => {
         });
       });
     }
@@ -816,7 +812,7 @@ app.post('/api/auth/reset-password', (req, res) => {
           return res.status(500).json({ error: updateErr.message });
         }
 
-        db.query('UPDATE email_otps SET used = 1 WHERE id = ?', [otpRow.id], (usedErr) => {
+        db.query('UPDATE email_otps SET used = true WHERE id = $1', [otpRow.id], (usedErr) => {
           if (usedErr) {
             console.error('Error marking reset OTP used:', usedErr);
           }
@@ -830,20 +826,24 @@ app.post('/api/auth/reset-password', (req, res) => {
 // Example route for bookings
 app.get('/api/bookings', (req, res) => {
   const { userId, serviceId, status } = req.query;
-  let query = 'SELECT id, user_id, service, CAST(DATE_FORMAT(date, \'%Y-%m-%d\') AS CHAR) as date, time, status, documents, fee, payment_status, notes FROM bookings WHERE 1=1';
+  let query = 'SELECT id, user_id, service, TO_CHAR(date, \'YYYY-MM-DD\') as date, time, status, documents, fee, payment_status, notes FROM bookings WHERE 1=1';
   const params = [];
+  let paramCount = 1;
 
   if (userId) {
-    query += ' AND user_id = ?';
+    query += ' AND user_id = $' + paramCount;
     params.push(userId);
+    paramCount++;
   }
   if (serviceId) {
-    query += ' AND service_id = ?';
+    query += ' AND service_id = $' + paramCount;
     params.push(serviceId);
+    paramCount++;
   }
   if (status) {
-    query += ' AND status = ?';
+    query += ' AND status = $' + paramCount;
     params.push(status);
+    paramCount++;
   }
 
   db.query(query, params, (err, results) => {
@@ -953,7 +953,7 @@ app.post('/api/announcements/:id/like', (req, res) => {
       console.error('Error liking announcement:', err);
       return res.status(500).json({ error: err.message });
     }
-    db.query('SELECT COUNT(*) AS likes FROM announcement_likes WHERE announcement_id = ?', [id], (selectErr, results) => {
+    db.query('SELECT COUNT(*) AS likes FROM announcement_likes WHERE announcement_id = $1', [id], (selectErr, results) => {
       if (selectErr) {
         console.error('Error fetching announcement likes:', selectErr);
         return res.status(500).json({ error: selectErr.message });
@@ -977,7 +977,7 @@ app.delete('/api/announcements/:id/like', (req, res) => {
       console.error('Error unliking announcement:', err);
       return res.status(500).json({ error: err.message });
     }
-    db.query('SELECT COUNT(*) AS likes FROM announcement_likes WHERE announcement_id = ?', [id], (selectErr, results) => {
+    db.query('SELECT COUNT(*) AS likes FROM announcement_likes WHERE announcement_id = $1', [id], (selectErr, results) => {
       if (selectErr) {
         console.error('Error fetching announcement likes:', selectErr);
         return res.status(500).json({ error: selectErr.message });
@@ -1087,7 +1087,7 @@ app.post('/api/announcements/comments/:commentId/like', (req, res) => {
       console.error('Error liking comment:', err);
       return res.status(500).json({ error: err.message });
     }
-    db.query('SELECT COUNT(*) AS likeCount FROM announcement_comment_likes WHERE comment_id = ?', [commentId], (selectErr, results) => {
+    db.query('SELECT COUNT(*) AS likeCount FROM announcement_comment_likes WHERE comment_id = $1', [commentId], (selectErr, results) => {
       if (selectErr) {
         console.error('Error fetching comment likes:', selectErr);
         return res.status(500).json({ error: selectErr.message });
@@ -1111,7 +1111,7 @@ app.delete('/api/announcements/comments/:commentId/like', (req, res) => {
       console.error('Error unliking comment:', err);
       return res.status(500).json({ error: err.message });
     }
-    db.query('SELECT COUNT(*) AS likeCount FROM announcement_comment_likes WHERE comment_id = ?', [commentId], (selectErr, results) => {
+    db.query('SELECT COUNT(*) AS likeCount FROM announcement_comment_likes WHERE comment_id = $1', [commentId], (selectErr, results) => {
       if (selectErr) {
         console.error('Error fetching comment likes:', selectErr);
         return res.status(500).json({ error: selectErr.message });
@@ -1423,7 +1423,7 @@ app.put('/api/mass-schedules/:id', (req, res) => {
 
 app.delete('/api/mass-schedules/:id', (req, res) => {
   const { id } = req.params;
-  db.query('DELETE FROM mass_schedules WHERE id = ?', [id], (err) => {
+  db.query('DELETE FROM mass_schedules WHERE id = $1', [id], (err) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
@@ -1445,7 +1445,7 @@ app.get('/api/messages', (req, res) => {
         u.email AS userEmail,
         m.text, 
         m.sender, 
-        DATE_FORMAT(m.timestamp, "%Y-%m-%dT%H:%i:%s") as timestamp 
+        TO_CHAR(m.timestamp, 'YYYY-MM-DD"T"HH24:MI:SS') as timestamp 
       FROM messages m
       LEFT JOIN users u ON m.user_id = u.id
       ORDER BY m.timestamp DESC
@@ -1459,7 +1459,7 @@ app.get('/api/messages', (req, res) => {
     });
   } else {
     // User view: fetch messages for specific user
-    const query = 'SELECT id, user_id AS userId, text, sender, DATE_FORMAT(timestamp, "%Y-%m-%dT%H:%i:%s") as timestamp FROM messages WHERE user_id = ? ORDER BY timestamp ASC';
+    const query = 'SELECT id, user_id AS userId, text, sender, TO_CHAR(timestamp, \'YYYY-MM-DD"T"HH24:MI:SS\') as timestamp FROM messages WHERE user_id = $1 ORDER BY timestamp ASC';
     db.query(query, [userId], (err, results) => {
       if (err) {
         res.status(500).json({ error: err.message });
@@ -1472,7 +1472,7 @@ app.get('/api/messages', (req, res) => {
 
 app.post('/api/messages', (req, res) => {
   const { user_id, sender, text } = req.body;
-  const query = 'INSERT INTO messages (user_id, sender, text) VALUES (?, ?, ?)';
+  const query = 'INSERT INTO messages (user_id, sender, text) VALUES ($1, $2, $3)';
   db.query(query, [user_id, sender, text], (err, result) => {
     if (err) {
       res.status(500).json({ error: err.message });
@@ -1485,7 +1485,7 @@ app.post('/api/messages', (req, res) => {
 app.put('/api/bookings/:id', (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
-  const query = 'UPDATE bookings SET status = ? WHERE id = ?';
+  const query = 'UPDATE bookings SET status = $1 WHERE id = $2';
   db.query(query, [status, id], (err, result) => {
     if (err) {
       res.status(500).json({ error: err.message });
@@ -1506,7 +1506,7 @@ app.post('/api/bookings/upload-documents', upload.any(), (req, res) => {
 
   try {
     // Get current documents
-    db.query('SELECT documents FROM bookings WHERE id = ?', [bookingId], (err, results) => {
+    db.query('SELECT documents FROM bookings WHERE id = $1', [bookingId], (err, results) => {
       if (err) return res.status(500).json({ error: err.message });
       
       let currentDocs = [];
@@ -1523,7 +1523,7 @@ app.post('/api/bookings/upload-documents', upload.any(), (req, res) => {
       const allDocs = [...currentDocs, ...newDocs];
 
       // Update booking with new documents
-      const updateQuery = 'UPDATE bookings SET documents = ? WHERE id = ?';
+      const updateQuery = 'UPDATE bookings SET documents = $1 WHERE id = $2';
       db.query(updateQuery, [JSON.stringify(allDocs), bookingId], (err) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ 
@@ -1565,7 +1565,7 @@ app.put('/api/announcements/:id', upload.any(), (req, res) => {
 
 app.delete('/api/announcements/:id', (req, res) => {
   const { id } = req.params;
-  db.query('DELETE FROM announcements WHERE id = ?', [id], (err, result) => {
+  db.query('DELETE FROM announcements WHERE id = $1', [id], (err, result) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
@@ -1604,12 +1604,12 @@ app.get('/api/org-members', (req, res) => {
 
 app.post('/api/org-members', (req, res) => {
   const { name, position, department, email, phone, photo, level, parentId } = req.body;
-  const query = 'INSERT INTO org_members (name, position, department, email, phone, photo, level, parent_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+  const query = 'INSERT INTO org_members (name, position, department, email, phone, photo, level, parent_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id';
   db.query(query, [name, position, department, email || null, phone || null, photo || null, level, parentId || null], (err, result) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json({ id: result.insertId, message: 'Member added successfully' });
+      res.json({ id: result.rows[0].id, message: 'Member added successfully' });
     }
   });
 });
@@ -1617,7 +1617,7 @@ app.post('/api/org-members', (req, res) => {
 app.put('/api/org-members/:id', (req, res) => {
   const { id } = req.params;
   const { name, position, department, email, phone, photo, level, parentId } = req.body;
-  const query = 'UPDATE org_members SET name = ?, position = ?, department = ?, email = ?, phone = ?, photo = ?, level = ?, parent_id = ? WHERE id = ?';
+  const query = 'UPDATE org_members SET name = $1, position = $2, department = $3, email = $4, phone = $5, photo = $6, level = $7, parent_id = $8 WHERE id = $9';
   db.query(query, [name, position, department, email || null, phone || null, photo || null, level, parentId || null, id], (err, result) => {
     if (err) {
       res.status(500).json({ error: err.message });
@@ -1629,7 +1629,7 @@ app.put('/api/org-members/:id', (req, res) => {
 
 app.delete('/api/org-members/:id', (req, res) => {
   const { id } = req.params;
-  const query = 'DELETE FROM org_members WHERE id = ?';
+  const query = 'DELETE FROM org_members WHERE id = $1';
   db.query(query, [id], (err, result) => {
     if (err) {
       res.status(500).json({ error: err.message });
@@ -1670,7 +1670,7 @@ app.delete('/api/users/:id', (req, res) => {
       }
       
       // Finally delete the user
-      const deleteUserQuery = 'DELETE FROM users WHERE id = ?';
+      const deleteUserQuery = 'DELETE FROM users WHERE id = $1';
       db.query(deleteUserQuery, [id], (err, result) => {
         if (err) {
           return res.status(500).json({ error: 'Failed to delete user: ' + err.message });
@@ -1690,7 +1690,7 @@ app.delete('/api/users/:id', (req, res) => {
 
 // Get all carousel images (active ones)
 app.get('/api/carousel', (req, res) => {
-  const query = 'SELECT id, title, description, image_path, order_position FROM carousel_images WHERE is_active = 1 ORDER BY order_position ASC';
+  const query = 'SELECT id, title, description, image_path, order_position FROM carousel_images WHERE is_active = true ORDER BY order_position ASC';
   db.query(query, (err, results) => {
     if (err) {
       res.status(500).json({ error: err.message });
@@ -1721,12 +1721,12 @@ app.post('/api/carousel', upload.single('image'), (req, res) => {
     return res.status(400).json({ error: 'Image file is required' });
   }
 
-  const query = 'INSERT INTO carousel_images (title, description, image_path, order_position, is_active) VALUES (?, ?, ?, ?, 1)';
+  const query = 'INSERT INTO carousel_images (title, description, image_path, order_position, is_active) VALUES ($1, $2, $3, $4, true) RETURNING id';
   db.query(query, [title || '', description || '', imagePath, orderPosition || 0], (err, result) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json({ id: result.insertId, message: 'Carousel image added successfully' });
+      res.json({ id: result[0]?.id || null, message: 'Carousel image added successfully' });
     }
   });
 });
@@ -1748,9 +1748,9 @@ app.put('/api/carousel/:id', upload.single('image'), (req, res) => {
     }
 
     const imagePath = req.file ? `/assets/uploads/carousel/${req.file.filename}` : getResults[0].image_path;
-    const query = 'UPDATE carousel_images SET title = ?, description = ?, image_path = ?, order_position = ?, is_active = ? WHERE id = ?';
+    const query = 'UPDATE carousel_images SET title = $1, description = $2, image_path = $3, order_position = $4, is_active = $5 WHERE id = $6';
     
-    db.query(query, [title || '', description || '', imagePath, orderPosition || 0, isActive ? 1 : 0, id], (updateErr) => {
+    db.query(query, [title || '', description || '', imagePath, orderPosition || 0, isActive === true || isActive === 'true', id], (updateErr) => {
       if (updateErr) {
         res.status(500).json({ error: updateErr.message });
       } else {
@@ -1763,7 +1763,7 @@ app.put('/api/carousel/:id', upload.single('image'), (req, res) => {
 // Delete carousel image
 app.delete('/api/carousel/:id', (req, res) => {
   const { id } = req.params;
-  const query = 'DELETE FROM carousel_images WHERE id = ?';
+  const query = 'DELETE FROM carousel_images WHERE id = $1';
   db.query(query, [id], (err, result) => {
     if (err) {
       res.status(500).json({ error: err.message });
