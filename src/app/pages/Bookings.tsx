@@ -183,7 +183,7 @@ Generated on: ${new Date().toLocaleString()}
     }
   };
 
-  const handleViewDocument = (docPath: string) => {
+  const handleDownloadDocument = (docPath: string) => {
     try {
       // Build the full URL
       let fullPath = docPath;
@@ -201,19 +201,19 @@ Generated on: ${new Date().toLocaleString()}
         ? fullPath 
         : `${window.location.origin}${fullPath}`;
       
-      // Create anchor element and trigger click to open in new tab
+      // Create anchor element with download attribute to force download
       const link = document.createElement('a');
       link.href = absoluteUrl;
-      link.target = '_blank';
+      link.download = docPath.split('/').pop() || 'document';
       link.rel = 'noopener noreferrer';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
-      toast.success('Opening document...');
+      toast.success('Document downloading...');
     } catch (error) {
-      console.error('View document error:', error);
-      toast.error('Failed to open document. Please try downloading instead.');
+      console.error('Download document error:', error);
+      toast.error('Failed to download document.');
     }
   };
 
@@ -312,10 +312,11 @@ Generated on: ${new Date().toLocaleString()}
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => handleViewDocument(doc)}
-                                    className="text-xs"
+                                    onClick={() => handleDownloadDocument(doc)}
+                                    className="text-xs flex items-center gap-1"
                                   >
-                                    View
+                                    <Download className="w-3 h-3" />
+                                    Download
                                   </Button>
                                 </div>
                               ))}

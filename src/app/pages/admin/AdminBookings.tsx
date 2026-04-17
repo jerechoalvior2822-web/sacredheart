@@ -446,17 +446,17 @@ Certificate ID: CERT-${booking.id}
                                         ? fullPath 
                                         : `${window.location.origin}${fullPath}`;
                                       
-                                      // Create anchor and open in new tab (don't download)
+                                      // Create anchor with download attribute to force download
                                       const link = document.createElement('a');
                                       link.href = absoluteUrl;
-                                      link.target = '_blank';
+                                      link.download = doc.split('/').pop() || 'document';
                                       link.rel = 'noopener noreferrer';
                                       document.body.appendChild(link);
                                       link.click();
                                       document.body.removeChild(link);
                                     }}
                                   >
-                                    View
+                                    Download
                                   </Button>
                                 </div>
                               ))}
