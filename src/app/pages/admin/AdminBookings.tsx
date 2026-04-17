@@ -6,7 +6,7 @@ import { Input, Textarea } from '../../components/Input';
 import { CheckCircle, XCircle, Clock, FileText, MessageSquare, X, Download, File } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
-import { getApiUrl, getAssetUrl } from '../../utils/apiConfig';
+import { getApiUrl } from '../../utils/apiConfig';
 
 export function AdminBookings() {
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
