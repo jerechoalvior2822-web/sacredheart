@@ -1672,7 +1672,7 @@ app.get('/api/users', (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json(results);
+      res.json(results || []);
     }
   });
 });
