@@ -1,11 +1,10 @@
 services:
   - type: web
     name: sacredheart
-    buildCommand: cd $PWD && yarn install && yarn build
+    buildCommand: bash build.sh
     startCommand: yarn server
     envVars:
       - key: NODE_ENV
         value: production
-      - key: NODE_VERSION
-        value: 20
+
 
