@@ -928,7 +928,7 @@ app.get('/api/announcements', (req, res) => {
     LEFT JOIN (
       SELECT announcement_id, COUNT(*) AS likes FROM announcement_likes GROUP BY announcement_id
     ) al ON al.announcement_id = a.id
-    GROUP BY a.id
+    GROUP BY a.id, a.title, a.content, a.type, a.date, a.image, a.created_at, al.likes
     ORDER BY a.created_at DESC
   `;
 
@@ -1214,7 +1214,7 @@ app.get('/api/donations', (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json(results);
+      res.json(results || []);
     }
   });
 });
@@ -1274,7 +1274,7 @@ app.get('/api/services', (req, res) => {
       if (err) {
         res.status(500).json({ error: err.message });
       } else {
-        const formatted = results.map((service) => ({
+        const formatted = (results || []).map((service) => ({
           ...service,
           requirements: parseJSONField(service.requirements),
           formFields: parseJSONField(service.formFields),
@@ -1344,7 +1344,7 @@ app.get('/api/souvenirs', (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json(results);
+      res.json(results || []);
     }
   });
 });
@@ -1395,12 +1395,12 @@ app.delete('/api/souvenirs/:id', (req, res) => {
 
 app.get('/api/mass-schedules', (req, res) => {
   db.query(
-    'SELECT id, mass_day AS massDay, mass_time AS massTime, CAST(date AS DATE)::TEXT as date, status, collectors, lectors, eucharistic_ministers AS eucharisticMinisters, altar_servers AS altarServers, choir_leader AS choirLeader, ushers FROM mass_schedules ORDER BY date, mass_time',
+    'SELECT id, mass_day AS massDay, mass_time AS massTime, TO_CHAR(date, \'YYYY-MM-DD\') as date, status, collectors, lectors, eucharistic_ministers AS eucharisticMinisters, altar_servers AS altarServers, choir_leader AS choirLeader, ushers FROM mass_schedules ORDER BY date, mass_time',
     (err, results) => {
       if (err) {
         res.status(500).json({ error: err.message });
       } else {
-        const formatted = results.map((schedule) => ({
+        const formatted = (results || []).map((schedule) => ({
           ...schedule,
           collectors: parseJSONField(schedule.collectors),
           lectors: parseJSONField(schedule.lectors),
@@ -1623,7 +1623,7 @@ app.get('/api/org-members', (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json(results);
+      res.json(results || []);
     }
   });
 });
