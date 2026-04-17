@@ -23,8 +23,9 @@ export function Donations() {
     fetch(getApiUrl('/api/donations'))
       .then(res => res.json())
       .then(data => {
-        setDonations(data);
-        setTotalDonations(data.reduce((sum: number, donation: any) => sum + Number(donation.amount), 0));
+        const donationsArray = Array.isArray(data) ? data : [];
+        setDonations(donationsArray);
+        setTotalDonations(donationsArray.reduce((sum: number, donation: any) => sum + Number(donation.amount), 0));
       })
       .catch(() => {
         setDonations([]);
@@ -74,8 +75,9 @@ export function Donations() {
       })
       .then((res) => res.json())
       .then((data) => {
-        setDonations(data);
-        setTotalDonations(data.reduce((sum: number, donation: any) => sum + Number(donation.amount), 0));
+        const donationsArray = Array.isArray(data) ? data : [];
+        setDonations(donationsArray);
+        setTotalDonations(donationsArray.reduce((sum: number, donation: any) => sum + Number(donation.amount), 0));
       })
       .catch((err) => {
         console.error('Donation submit failed', err);

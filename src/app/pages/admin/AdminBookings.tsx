@@ -33,12 +33,13 @@ export function AdminBookings() {
 
         // Build a lookup map: user_id -> { name, email }
         const usersMap: Record<number, { name: string; email: string }> = {};
-        usersData.forEach((u: any) => {
+        const usersArray = Array.isArray(usersData) ? usersData : [];
+        usersArray.forEach((u: any) => {
           usersMap[u.id] = { name: u.name || u.username || `User #${u.id}`, email: u.email || 'No email' };
         });
 
         setBookings(
-          bookingsData.map((booking: any) => {
+          (Array.isArray(bookingsData) ? bookingsData : []).map((booking: any) => {
             const userInfo = usersMap[booking.user_id] || {
               name: booking.user || `User #${booking.user_id}`,
               email: booking.email || 'No email provided',

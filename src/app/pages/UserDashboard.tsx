@@ -31,7 +31,7 @@ export function UserDashboard() {
     fetch(getApiUrl('/api/bookings'))
       .then(res => res.json())
       .then(data => {
-        setAllBookings(data);
+        setAllBookings(Array.isArray(data) ? data : []);
       })
       .catch(() => {
         setAllBookings([]);

@@ -53,7 +53,8 @@ export function AdminDashboard() {
 
         // Build users map for lookup
         const newUsersMap: Record<number, { name: string; email: string }> = {};
-        usersData.forEach((u: any) => {
+        const usersArray = Array.isArray(usersData) ? usersData : [];
+        usersArray.forEach((u: any) => {
           newUsersMap[u.id] = { 
             name: u.name || u.username || `User #${u.id}`, 
             email: u.email || 'No email' 
@@ -61,11 +62,12 @@ export function AdminDashboard() {
         });
         setUsersMap(newUsersMap);
 
-        setBookings(bookingsData.map((booking: any) => ({
+        const bookingsArray = Array.isArray(bookingsData) ? bookingsData : [];
+        setBookings(bookingsArray.map((booking: any) => ({
           ...booking,
           documents: booking.documents ? JSON.parse(booking.documents) : [],
         })));
-        setDonations(donationsData);
+        setDonations(Array.isArray(donationsData) ? donationsData : []);
       } catch (err) {
         setError((err as Error).message || 'Unable to load dashboard data');
       } finally {

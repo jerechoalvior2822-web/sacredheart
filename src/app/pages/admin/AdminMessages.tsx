@@ -68,7 +68,8 @@ export function AdminMessages() {
 
       // Group messages by userId and capture user info
       const grouped: Record<number, { messages: Message[]; userName?: string; userEmail?: string }> = {};
-      data.forEach((msg: Message) => {
+      const messagesArray = Array.isArray(data) ? data : [];
+      messagesArray.forEach((msg: Message) => {
         if (!grouped[msg.userId]) {
           grouped[msg.userId] = {
             messages: [],
