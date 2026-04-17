@@ -1295,7 +1295,7 @@ app.post('/api/services', upload.any(), (req, res) => {
   const query = 'INSERT INTO services (name, description, category, price, processing_time, requirements, image, form_path, form_name, form_fields) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id';
   db.query(
     query,
-    [name, description, category, price, processingTime, JSON.stringify(parsedRequirements), imagePath, formPath || '', formName || '', JSON.stringify(parsedFormFields)],
+    [name || '', description || '', category || '', price || '', processingTime || '', JSON.stringify(parsedRequirements), imagePath, formPath || '', formName || '', JSON.stringify(parsedFormFields)],
     (err, result) => {
       if (err) {
         console.error('Service create error:', err, { body: req.body, files: req.files });
@@ -1356,7 +1356,7 @@ app.post('/api/souvenirs', upload.any(), (req, res) => {
   const imagePath = file ? `/assets/uploads/${file.filename}` : (req.body?.image || '');
   
   const query = 'INSERT INTO souvenirs (name, description, price, stock, image) VALUES ($1, $2, $3, $4, $5) RETURNING id';
-  db.query(query, [name, description, price, stock, imagePath], (err, result) => {
+  db.query(query, [name || '', description || '', price || '', stock || 0, imagePath], (err, result) => {
     if (err) {
       console.error('Souvenir create error:', err, { body: req.body, files: req.files });
       res.status(500).json({ error: err.message });
@@ -1373,7 +1373,7 @@ app.put('/api/souvenirs/:id', upload.any(), (req, res) => {
   const imagePath = file ? `/assets/uploads/${file.filename}` : (req.body?.image || '');
   
   const query = 'UPDATE souvenirs SET name = $1, description = $2, price = $3, stock = $4, image = $5 WHERE id = $6';
-  db.query(query, [name, description, price, stock, imagePath, id], (err) => {
+  db.query(query, [name || '', description || '', price || '', stock || 0, imagePath, id], (err) => {
     if (err) {
       console.error('Souvenir update error:', err, { body: req.body, files: req.files });
       res.status(500).json({ error: err.message });
