@@ -1812,7 +1812,54 @@ app.use((req, res) => {
   }
 });
 
+// Auto-create admin user on startup
+const ensureAdminUserExists = () => {
+  const adminEmail = 'shjp@admin.com';
+  const adminPassword = 'SacredHeartJesusParish1997';
+  const adminName = 'Sacred Heart Admin';
+  const adminPasswordHash = hashPassword(adminPassword);
+
+  db.query('SELECT id FROM users WHERE email = $1', [adminEmail], (err, results) => {
+    if (err) {
+      console.error('Error checking for admin user:', err);
+      return;
+    }
+
+    if (results && results.length > 0) {
+      // Admin exists, ensure they have admin role and verified status
+      db.query(
+        'UPDATE users SET role = $1, is_verified = true WHERE email = $2',
+        ['admin', adminEmail],
+        (updateErr) => {
+          if (updateErr) {
+            console.error('Error updating admin user:', updateErr);
+          } else {
+            console.log('✅ Admin user verified and updated');
+          }
+        }
+      );
+    } else {
+      // Create admin user
+      db.query(
+        'INSERT INTO users (name, email, password_hash, phone, address, role, is_verified) VALUES ($1, $2, $3, $4, $5, $6, true)',
+        [adminName, adminEmail, adminPasswordHash, '', '', 'admin'],
+        (insertErr) => {
+          if (insertErr) {
+            console.error('Error creating admin user:', insertErr);
+          } else {
+            console.log('✅ Admin user created successfully!');
+            console.log(`   Email: ${adminEmail}`);
+            console.log(`   Password: ${adminPassword}`);
+          }
+        }
+      );
+    }
+  });
+};
+
 // Start server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
+  // Ensure admin user exists after short delay to allow DB connection to stabilize
+  setTimeout(ensureAdminUserExists, 1000);
 });
