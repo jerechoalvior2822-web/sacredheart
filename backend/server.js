@@ -284,7 +284,7 @@ db.connect((err) => {
             return;
           }
 
-          const count = Array.isArray(countResults) && countResults[0] ? countResults[0].count : 0;
+          const count = (countResults && countResults.rows && countResults.rows[0]) ? countResults.rows[0].count : 0;
           if (count === 0) {
             const seedServices = [
               [
@@ -457,7 +457,7 @@ db.connect((err) => {
             (columnErr, columnResults) => {
               if (columnErr) {
                 console.error(`Failed to inspect users table column ${columnName}:`, columnErr);
-              } else if (!columnResults || columnResults.rows.length === 0) {
+              } else if (!columnResults || !columnResults.rows || columnResults.rows.length === 0) {
                 const alterQuery = `ALTER TABLE users ADD COLUMN ${columnName} ${pgType}`;
                 db.query(alterQuery, (alterErr) => {
                   if (alterErr) {
