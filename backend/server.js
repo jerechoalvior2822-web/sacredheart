@@ -883,6 +883,24 @@ app.get('/api/bookings', (req, res) => {
   });
 });
 
+app.get('/api/bookings/:id', (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: 'Booking ID is required' });
+  }
+
+  const query = 'SELECT id, user_id, service, TO_CHAR(date, \'YYYY-MM-DD\') as date, time, status, documents, fee, payment_status, notes FROM bookings WHERE id = $1';
+  db.query(query, [parseInt(id, 10)], (err, results) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else if (!results || results.length === 0) {
+      res.status(404).json({ error: 'Booking not found' });
+    } else {
+      res.json(results[0]);
+    }
+  });
+});
+
 // Get booked dates for a service (for calendar blocking)
 app.get('/api/bookings/booked-dates', (req, res) => {
   const { serviceId } = req.query;
@@ -967,6 +985,27 @@ app.get('/api/announcements', (req, res) => {
     }
   });
 });
+
+app.get('/api/announcements/:id', (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: 'Announcement ID is required' });
+  }
+
+  db.query('SELECT id, title, content, type, image, to_char(created_at, \'YYYY-MM-DD HH24:MI:SS\') as created_at, likes FROM announcements WHERE id = $1', [parseInt(id, 10)], (err, results) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else if (!results || results.length === 0) {
+      res.status(404).json({ error: 'Announcement not found' });
+    } else {
+      res.json({
+        ...results[0],
+        likes: results[0].likes ?? 0,
+      });
+    }
+  });
+});
+
 
 app.post('/api/announcements/:id/like', (req, res) => {
   const { id } = req.params;
@@ -1222,6 +1261,23 @@ app.get('/api/donations', (req, res) => {
   });
 });
 
+app.get('/api/donations/:id', (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: 'Donation ID is required' });
+  }
+
+  db.query('SELECT id, user_id, donation_type, amount, payment_method, message, proof_file_name, to_char(created_at, \'YYYY-MM-DD HH24:MI:SS\') as created_at FROM donations WHERE id = $1', [parseInt(id, 10)], (err, results) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else if (!results || results.length === 0) {
+      res.status(404).json({ error: 'Donation not found' });
+    } else {
+      res.json(results[0]);
+    }
+  });
+});
+
 app.post('/api/donations', (req, res) => {
   const { user_id, donation_type, amount, payment_method, message, proof_file_name } = req.body;
   const query = 'INSERT INTO donations (user_id, donation_type, amount, payment_method, message, proof_file_name) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id';
@@ -1283,6 +1339,33 @@ app.get('/api/services', (req, res) => {
           requirements: parseJSONField(service.requirements),
           formFields: parseJSONField(service.formFields),
         }));
+        res.json(formatted);
+      }
+    }
+  );
+});
+
+app.get('/api/services/:id', (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: 'Service ID is required' });
+  }
+
+  db.query(
+    'SELECT id, name, description, category, price, processing_time as processingTime, requirements, image, form_path as formPath, form_name as formName, form_fields as formFields FROM services WHERE id = $1',
+    [parseInt(id, 10)],
+    (err, results) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+      } else if (!results || results.length === 0) {
+        res.status(404).json({ error: 'Service not found' });
+      } else {
+        const service = results[0];
+        const formatted = {
+          ...service,
+          requirements: parseJSONField(service.requirements),
+          formFields: parseJSONField(service.formFields),
+        };
         res.json(formatted);
       }
     }
@@ -1370,6 +1453,24 @@ app.get('/api/souvenirs', (req, res) => {
   });
 });
 
+app.get('/api/souvenirs/:id', (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: 'Souvenir ID is required' });
+  }
+
+  db.query('SELECT id, name, description, price, stock, image FROM souvenirs WHERE id = $1', [parseInt(id, 10)], (err, results) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else if (!results || results.length === 0) {
+      res.status(404).json({ error: 'Souvenir not found' });
+    } else {
+      res.json(results[0]);
+    }
+  });
+});
+
+
 app.post('/api/souvenirs', upload.any(), (req, res) => {
   const { name, description, price, stock } = req.body || {};
   const file = Array.isArray(req.files) ? req.files.find((file) => file.fieldname === 'image') : null;
@@ -1449,6 +1550,31 @@ app.get('/api/mass-schedules', (req, res) => {
       }
     }
   );
+});
+
+app.get('/api/mass-schedules/:id', (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: 'Mass schedule ID is required' });
+  }
+
+  db.query('SELECT id, mass_day as massDay, mass_time as massTime, date, status, collectors, lectors, eucharistic_ministers as eucharisticMinisters, altar_servers as altarServers, choir_leader as choirLeader, ushers FROM mass_schedules WHERE id = $1', [parseInt(id, 10)], (err, results) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else if (!results || results.length === 0) {
+      res.status(404).json({ error: 'Mass schedule not found' });
+    } else {
+      const schedule = results[0];
+      res.json({
+        ...schedule,
+        collectors: parseJSONField(schedule.collectors),
+        lectors: parseJSONField(schedule.lectors),
+        eucharisticMinisters: parseJSONField(schedule.eucharisticMinisters),
+        altarServers: parseJSONField(schedule.altarServers),
+        ushers: parseJSONField(schedule.ushers),
+      });
+    }
+  });
 });
 
 app.post('/api/mass-schedules', (req, res) => {
@@ -1677,6 +1803,24 @@ app.get('/api/org-members', (req, res) => {
   });
 });
 
+app.get('/api/org-members/:id', (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: 'Member ID is required' });
+  }
+
+  const query = 'SELECT id, name, position, department, email, phone, photo, level, parent_id AS parentId FROM org_members WHERE id = $1';
+  db.query(query, [parseInt(id, 10)], (err, results) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else if (!results || results.length === 0) {
+      res.status(404).json({ error: 'Member not found' });
+    } else {
+      res.json(results[0]);
+    }
+  });
+});
+
 app.post('/api/org-members', (req, res) => {
   const { name, position, department, email, phone, photo, level, parentId } = req.body;
   const query = 'INSERT INTO org_members (name, position, department, email, phone, photo, level, parent_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id';
@@ -1726,6 +1870,24 @@ app.get('/api/users', (req, res) => {
   });
 });
 
+app.get('/api/users/:id', (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: 'User ID is required' });
+  }
+
+  const query = 'SELECT id, name, email, role, is_verified, phone, address FROM users WHERE id = $1';
+  db.query(query, [parseInt(id, 10)], (err, results) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else if (!results || results.length === 0) {
+      res.status(404).json({ error: 'User not found' });
+    } else {
+      res.json(results[0]);
+    }
+  });
+});
+
 // Delete user endpoint
 app.delete('/api/users/:id', (req, res) => {
   const { id } = req.params;
@@ -1771,6 +1933,24 @@ app.get('/api/carousel', (req, res) => {
       res.status(500).json({ error: err.message });
     } else {
       res.json(results || []);
+    }
+  });
+});
+
+app.get('/api/carousel/:id', (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: 'Carousel image ID is required' });
+  }
+
+  const query = 'SELECT id, title, description, image_path, order_position, is_active FROM carousel_images WHERE id = $1';
+  db.query(query, [parseInt(id, 10)], (err, results) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else if (!results || results.length === 0) {
+      res.status(404).json({ error: 'Carousel image not found' });
+    } else {
+      res.json(results[0]);
     }
   });
 });
