@@ -8,6 +8,7 @@ import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import { getApiUrl, getAssetUrl } from '../utils/apiConfig';
 import {
+  Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
