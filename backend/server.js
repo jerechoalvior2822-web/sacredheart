@@ -1317,7 +1317,7 @@ app.put('/api/services/:id', upload.any(), (req, res) => {
   const query = 'UPDATE services SET name = $1, description = $2, category = $3, price = $4, processing_time = $5, requirements = $6, image = $7, form_path = $8, form_name = $9, form_fields = $10 WHERE id = $11';
   db.query(
     query,
-    [name, description, category, price, processingTime, JSON.stringify(parsedRequirements), imagePath, formPath || '', formName || '', JSON.stringify(parsedFormFields), id],
+    [name || '', description || '', category || '', price || '', processingTime || '', JSON.stringify(parsedRequirements), imagePath, formPath || '', formName || '', JSON.stringify(parsedFormFields), id],
     (err) => {
       if (err) {
         console.error('Service update error:', err, { body: req.body, files: req.files });
@@ -1438,7 +1438,7 @@ app.put('/api/mass-schedules/:id', (req, res) => {
   const query = 'UPDATE mass_schedules SET mass_day = $1, mass_time = $2, date = $3, status = $4, collectors = $5, lectors = $6, eucharistic_ministers = $7, altar_servers = $8, choir_leader = $9, ushers = $10 WHERE id = $11';
   db.query(
     query,
-    [massDay, massTime, date, status, JSON.stringify(collectors || []), JSON.stringify(lectors || []), JSON.stringify(eucharisticMinisters || []), JSON.stringify(altarServers || []), choirLeader || '', JSON.stringify(ushers || []), id],
+    [massDay || '', massTime || '', date || '', status || '', JSON.stringify(collectors || []), JSON.stringify(lectors || []), JSON.stringify(eucharisticMinisters || []), JSON.stringify(altarServers || []), choirLeader || '', JSON.stringify(ushers || []), id],
     (err) => {
       if (err) {
         res.status(500).json({ error: err.message });
@@ -1646,7 +1646,7 @@ app.put('/api/org-members/:id', (req, res) => {
   const { id } = req.params;
   const { name, position, department, email, phone, photo, level, parentId } = req.body;
   const query = 'UPDATE org_members SET name = $1, position = $2, department = $3, email = $4, phone = $5, photo = $6, level = $7, parent_id = $8 WHERE id = $9';
-  db.query(query, [name, position, department, email || null, phone || null, photo || null, level, parentId || null, id], (err, result) => {
+  db.query(query, [name || '', position || '', department || '', email || null, phone || null, photo || null, level || 1, parentId || null, id], (err, result) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
