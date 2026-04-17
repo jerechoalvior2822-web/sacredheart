@@ -303,7 +303,8 @@ db.connect((err) => {
             return;
           }
 
-          const count = (countResults && countResults.rows && countResults.rows[0]) ? countResults.rows[0].count : 0;
+          // countResults is already the extracted rows array, not {rows: [...]}
+          const count = (countResults && countResults[0]) ? countResults[0].count : 0;
           if (count === 0) {
             const seedServices = [
               [
@@ -482,7 +483,8 @@ db.connect((err) => {
             (columnErr, columnResults) => {
               if (columnErr) {
                 console.error(`Failed to inspect users table column ${columnName}:`, columnErr);
-              } else if (!columnResults || !columnResults.rows || columnResults.rows.length === 0) {
+              } else if (!columnResults || columnResults.length === 0) {
+                // columnResults is already the extracted rows array, not {rows: [...]}
                 const alterQuery = `ALTER TABLE users ADD COLUMN ${columnName} ${pgType}`;
                 db.query(alterQuery, (alterErr) => {
                   if (alterErr) {
@@ -626,7 +628,8 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(500).json({ error: selectErr.message });
     }
 
-    if (selectResults && selectResults.rows && selectResults.rows.length > 0) {
+    // selectResults is already the extracted rows array, not {rows: [...]}
+    if (selectResults && selectResults.length > 0) {
       return res.status(400).json({ error: 'Email is already registered' });
     }
 
