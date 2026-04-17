@@ -875,7 +875,7 @@ app.get('/api/bookings', (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json(results);
+      res.json(results?.rows || []);
     }
   });
 });
@@ -897,7 +897,7 @@ app.get('/api/bookings/booked-dates', (req, res) => {
       res.status(500).json({ error: err.message });
     } else {
       // Return as unique date array
-      const dates = results.map(r => r.date);
+      const dates = (results?.rows || []).map(r => r.date);
       res.json(dates);
     }
   });
@@ -937,7 +937,7 @@ app.get('/api/announcements', (req, res) => {
       console.error('Error fetching announcements:', err);
       res.status(500).json({ error: err.message });
     } else {
-      const formatted = (results || []).map((post) => ({
+      const formatted = (results?.rows || []).map((post) => ({
         ...post,
         likes: post.likes ?? 0,
         commentCount: Number(post.commentCount || 0),
@@ -953,7 +953,7 @@ app.get('/api/announcements', (req, res) => {
           console.error('Error checking announcement likes for user:', likeErr);
           return res.status(500).json({ error: likeErr.message });
         }
-        const likedSet = new Set((likeResults || []).map((row) => row.announcementId));
+        const likedSet = new Set((likeResults?.rows || []).map((row) => row.announcementId));
         res.json(
           formatted.map((post) => ({
             ...post,
@@ -1214,7 +1214,7 @@ app.get('/api/donations', (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json(results || []);
+      res.json(results?.rows || []);
     }
   });
 });
@@ -1274,7 +1274,7 @@ app.get('/api/services', (req, res) => {
       if (err) {
         res.status(500).json({ error: err.message });
       } else {
-        const formatted = (results || []).map((service) => ({
+        const formatted = (results?.rows || []).map((service) => ({
           ...service,
           requirements: parseJSONField(service.requirements),
           formFields: parseJSONField(service.formFields),
@@ -1344,7 +1344,7 @@ app.get('/api/souvenirs', (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json(results || []);
+      res.json(results?.rows || []);
     }
   });
 });
@@ -1480,7 +1480,7 @@ app.get('/api/messages', (req, res) => {
       if (err) {
         res.status(500).json({ error: err.message });
       } else {
-        res.json(results);
+        res.json(results?.rows || []);
       }
     });
   } else {
@@ -1490,7 +1490,7 @@ app.get('/api/messages', (req, res) => {
       if (err) {
         res.status(500).json({ error: err.message });
       } else {
-        res.json(results);
+        res.json(results?.rows || []);
       }
     });
   }
@@ -1623,7 +1623,7 @@ app.get('/api/org-members', (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json(results || []);
+      res.json(results?.rows || []);
     }
   });
 });
@@ -1672,7 +1672,7 @@ app.get('/api/users', (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json(results || []);
+      res.json(results?.rows || []);
     }
   });
 });
@@ -1721,7 +1721,7 @@ app.get('/api/carousel', (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json(results);
+      res.json(results?.rows || []);
     }
   });
 });
@@ -1733,7 +1733,7 @@ app.get('/api/carousel/admin/all', (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json(results);
+      res.json(results?.rows || []);
     }
   });
 });
