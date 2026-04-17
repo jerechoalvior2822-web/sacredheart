@@ -49,7 +49,7 @@ export function AdminOrgChart() {
       const response = await fetch(getApiUrl('/api/org-members'));
       if (!response.ok) throw new Error('Failed to load org members');
       const data = await response.json();
-      setOrgMembers(data);
+      setOrgMembers(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching org members:', error);
       toast.error('Failed to load organization members');
