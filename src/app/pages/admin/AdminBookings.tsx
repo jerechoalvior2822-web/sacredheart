@@ -429,17 +429,20 @@ Certificate ID: CERT-${booking.id}
                             <div className="space-y-2">
                               {docs.map((doc, idx) => (
                                 <div key={idx} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
-                                  <span className="text-sm">{doc.split('/').pop() || `Document ${idx + 1}`}</span>
+                                  <span className="text-sm">{doc.split('/').pop() || doc}</span>
                                   <Button 
                                     variant="ghost" 
                                     size="sm"
                                     onClick={() => {
-                                      // Documents are stored as full paths like /assets/uploads/documents/filename.pdf
-                                      let viewUrl = doc;
-                                      if (!doc.startsWith('http')) {
-                                        viewUrl = getAssetUrl(doc);  // Properly construct the full URL for static file serving
+                                      // Documents stored as /assets/uploads/documents/filename.pdf
+                                      // Serve directly as static files, not through API
+                                      let fullPath = doc;
+                                      if (doc.startsWith('/assets')) {
+                                        fullPath = getAssetUrl(doc);
+                                      } else if (!doc.startsWith('http')) {
+                                        fullPath = getAssetUrl(`/assets/uploads/documents/${doc}`);
                                       }
-                                      window.open(viewUrl, '_blank');
+                                      window.open(fullPath, '_blank');
                                     }}
                                   >
                                     View
