@@ -911,7 +911,7 @@ app.post('/api/bookings', (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json({ id: result.rows[0]?.id, message: 'Booking created successfully' });
+      res.json({ id: result?.[0]?.id, message: 'Booking created successfully' });
     }
   });
 });
@@ -1029,7 +1029,7 @@ app.post('/api/announcements/:id/comments', (req, res) => {
       return res.status(500).json({ error: err.message });
     }
     const comment = {
-      id: result.rows[0]?.id,
+      id: result?.[0]?.id,
       announcementId: Number(id),
       parentCommentId: parentCommentId ? Number(parentCommentId) : null,
       user: String(user).trim(),
@@ -1205,7 +1205,7 @@ app.post('/api/announcements', upload.any(), (req, res) => {
       console.error('Error creating announcement:', err);
       return res.status(500).json({ error: err.message });
     }
-      res.json({ id: result.rows[0]?.id, message: 'Announcement created successfully' });
+      res.json({ id: result?.[0]?.id, message: 'Announcement created successfully' });
   });
 });
 
@@ -1226,7 +1226,7 @@ app.post('/api/donations', (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json({ id: result.rows[0]?.id, message: 'Donation submitted successfully' });
+      res.json({ id: result?.[0]?.id, message: 'Donation submitted successfully' });
     }
   });
 });
@@ -1301,7 +1301,7 @@ app.post('/api/services', upload.any(), (req, res) => {
         console.error('Service create error:', err, { body: req.body, files: req.files });
         res.status(500).json({ error: err.message });
       } else {
-        res.json({ id: result.rows[0]?.id, message: 'Service created successfully' });
+        res.json({ id: result?.[0]?.id, message: 'Service created successfully' });
       }
     }
   );
@@ -1361,7 +1361,7 @@ app.post('/api/souvenirs', upload.any(), (req, res) => {
       console.error('Souvenir create error:', err, { body: req.body, files: req.files });
       res.status(500).json({ error: err.message });
     } else {
-      res.json({ id: result.rows[0]?.id, message: 'Souvenir created successfully' });
+      res.json({ id: result?.[0]?.id, message: 'Souvenir created successfully' });
     }
   });
 });
@@ -1426,7 +1426,7 @@ app.post('/api/mass-schedules', (req, res) => {
       if (err) {
         res.status(500).json({ error: err.message });
       } else {
-        res.json({ id: result.rows[0]?.id, message: 'Mass schedule created successfully' });
+        res.json({ id: result?.[0]?.id, message: 'Mass schedule created successfully' });
       }
     }
   );
@@ -1505,7 +1505,7 @@ app.post('/api/messages', (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json({ id: result.rows[0]?.id, message: 'Message saved successfully' });
+      res.json({ id: result?.[0]?.id, message: 'Message saved successfully' });
     }
   });
 });
@@ -1637,7 +1637,7 @@ app.post('/api/org-members', (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json({ id: result.rows[0].id, message: 'Member added successfully' });
+      res.json({ id: result?.[0]?.id, message: 'Member added successfully' });
     }
   });
 });
@@ -1754,7 +1754,7 @@ app.post('/api/carousel', upload.single('image'), (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json({ id: result[0]?.id || null, message: 'Carousel image added successfully' });
+      res.json({ id: result?.[0]?.id || null, message: 'Carousel image added successfully' });
     }
   });
 });
