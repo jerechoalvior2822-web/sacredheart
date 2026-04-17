@@ -58,6 +58,9 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use('/assets', express.static(path.join(__dirname, '../assets')));
 
+// Serve the built React app from dist folder
+app.use(express.static(path.join(__dirname, '../dist')));
+
 // Log all requests
 app.use((req, res, next) => {
   console.log(`[HTTP] ${req.method} ${req.path}`);
@@ -1797,6 +1800,11 @@ app.get('/api/documents/:filename', (req, res) => {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
   }
+});
+
+// Fallback to serve index.html for client-side routing (SPA)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 // Start server
