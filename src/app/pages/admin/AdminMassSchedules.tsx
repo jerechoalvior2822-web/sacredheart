@@ -57,7 +57,7 @@ export function AdminMassSchedules() {
       const response = await fetch(getApiUrl('/api/mass-schedules'));
       if (!response.ok) throw new Error('Failed to load assignments');
       const data = await response.json();
-      setAssignments(data);
+      setAssignments(Array.isArray(data) ? data : []);
     } catch (err) {
       toast.error('Failed to load mass schedules');
       console.error(err);

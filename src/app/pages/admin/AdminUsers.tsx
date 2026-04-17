@@ -76,8 +76,12 @@ export function AdminUsers() {
       const usersData = await usersRes.json();
       const bookingsData = await (bookingsRes.ok ? bookingsRes.json() : Promise.resolve([]));
 
+      // Validate arrays
+      const usersArray = Array.isArray(usersData) ? usersData : [];
+      const bookingsArray = Array.isArray(bookingsData) ? bookingsData : [];
+
       // Group bookings by user_id and calculate stats
-      const bookingsByUser = bookingsData.reduce((acc: any, booking: any) => {
+      const bookingsByUser = bookingsArray.reduce((acc: any, booking: any) => {
         if (!acc[booking.user_id]) {
           acc[booking.user_id] = [];
         }
@@ -85,7 +89,7 @@ export function AdminUsers() {
         return acc;
       }, {});
 
-      const usersWithStats = usersData.map((user: any) => {
+      const usersWithStats = usersArray.map((user: any) => {
         const userBookings = bookingsByUser[user.id] || [];
         const totalFees = userBookings.reduce((sum: number, booking: any) => {
           const fee = typeof booking.fee === 'string' 

@@ -20,7 +20,7 @@ export function Souvenirs() {
         const response = await fetch(getApiUrl('/api/souvenirs'));
         if (!response.ok) throw new Error('Failed to load souvenirs');
         const data = await response.json();
-        setProducts(data);
+        setProducts(Array.isArray(data) ? data : []);
       } catch (err) {
         setProductError((err as Error).message || 'Unable to load souvenirs');
       } finally {

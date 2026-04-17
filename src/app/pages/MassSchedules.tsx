@@ -31,7 +31,7 @@ export function MassSchedules() {
         const response = await fetch(getApiUrl('/api/mass-schedules'));
         if (!response.ok) throw new Error('Failed to load mass schedules');
         const data = await response.json();
-        setMassSchedules(data);
+        setMassSchedules(Array.isArray(data) ? data : []);
       } catch (err) {
         setError((err as Error).message || 'Unable to load schedules');
       } finally {

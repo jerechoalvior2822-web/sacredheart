@@ -84,7 +84,8 @@ export function Bookings() {
     fetch(getApiUrl('/api/bookings'))
       .then(res => res.json())
       .then(data => {
-        const mapped: any[] = data.map((b: any) => ({
+        const bookingsArray = Array.isArray(data) ? data : [];
+        const mapped: any[] = bookingsArray.map((b: any) => ({
           ...b,
           status: b.status === 'confirmed' ? 'Approved' : b.status === 'cancelled' ? 'Rejected' : 'Pending',
           documents: JSON.parse(b.documents || '[]'),

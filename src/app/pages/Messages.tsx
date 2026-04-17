@@ -74,8 +74,11 @@ export function Messages() {
       if (!response.ok) throw new Error('Failed to load messages');
       const data = await response.json();
       
+      // Validate array
+      const messagesArray = Array.isArray(data) ? data : [];
+      
       // Count admin messages
-      const adminMessageCount = data.filter((m: Message) => m.sender === 'admin').length;
+      const adminMessageCount = messagesArray.filter((m: Message) => m.sender === 'admin').length;
       
       // Show notification if new admin message arrived
       if (previousAdminMessageCount > 0 && adminMessageCount > previousAdminMessageCount) {
@@ -83,7 +86,7 @@ export function Messages() {
       }
       
       setPreviousAdminMessageCount(adminMessageCount);
-      setMessages(data);
+      setMessages(messagesArray);
       // Reset unread count when viewing messages
       if (notifications.unreadMessages > 0) {
         resetUnreadMessages();

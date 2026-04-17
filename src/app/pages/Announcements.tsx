@@ -44,8 +44,9 @@ export function Announcements() {
         const response = await fetch(getApiUrl(`/api/announcements${query}`));
         if (!response.ok) throw new Error('Failed to load announcements');
         const data = await response.json();
+        const postsArray = Array.isArray(data) ? data : [];
         setPosts(
-          data.map((post: any) => ({
+          postsArray.map((post: any) => ({
             ...post,
             likes: post.likes ?? 0,
             commentCount: Number(post.commentCount ?? 0),

@@ -35,7 +35,7 @@ export function AdminAnnouncements() {
     fetch(getApiUrl('/api/announcements'))
       .then(res => res.json())
       .then(data => {
-        setAnnouncements(data);
+        setAnnouncements(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch(err => {

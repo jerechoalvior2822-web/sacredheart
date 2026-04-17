@@ -114,8 +114,9 @@ export function Services() {
         const response = await fetch(getApiUrl('/api/services'));
         if (!response.ok) throw new Error('Failed to load services');
         const data = await response.json();
-        setServices(data);
-        setFilteredServices(data);
+        const servicesArray = Array.isArray(data) ? data : [];
+        setServices(servicesArray);
+        setFilteredServices(servicesArray);
       } catch (err) {
         setServicesError((err as Error).message || 'Unable to load services');
       } finally {
