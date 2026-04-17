@@ -1,0 +1,11 @@
+SACRED HEART OF JESUS PARISH
+Sample Document
+
+This is a sample text document to demonstrate document viewing functionality.
+
+Date: 2026-04-18
+Status: Test Document
+
+If you can see this, the static file serving is working correctly!
+
+Please upload actual PDF files through the application for real bookings.
