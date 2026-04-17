@@ -24,7 +24,7 @@ const storage = multer.diskStorage({
     let folder = 'uploads';
     if (req.path.includes('/carousel')) {
       folder = 'uploads/carousel';
-    } else if (req.path.includes('/bookings/upload')) {
+    } else if (req.path.includes('/bookings') || req.path.includes('upload-documents')) {
       folder = 'uploads/documents';
     }
     cb(null, path.join(__dirname, `../assets/${folder}`));

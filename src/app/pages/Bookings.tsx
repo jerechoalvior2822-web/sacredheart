@@ -188,11 +188,13 @@ Generated on: ${new Date().toLocaleString()}
       // Build the full URL
       let fullPath = docPath;
       
-      // If path starts with /assets, prepend the backend URL
+      // Documents are stored as /assets/uploads/documents/filename.pdf
+      // We need to serve them as static files directly, not through API
       if (docPath.startsWith('/assets')) {
-        fullPath = getApiUrl(docPath);
+        fullPath = getAssetUrl(docPath);  // Use getAssetUrl to properly construct the URL
       } else if (!docPath.startsWith('http')) {
-        fullPath = getAssetUrl(`uploads/documents/${docPath}`);
+        // If just filename, construct full path
+        fullPath = getAssetUrl(`/assets/uploads/documents/${docPath}`);
       }
       
       // Open in new tab
