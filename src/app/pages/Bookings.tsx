@@ -189,16 +189,21 @@ Generated on: ${new Date().toLocaleString()}
       let fullPath = docPath;
       
       // Documents are stored as /assets/uploads/documents/filename.pdf
-      // We need to serve them as static files directly, not through API
+      // Convert relative paths to absolute URLs to bypass React Router
       if (docPath.startsWith('/assets')) {
-        fullPath = getAssetUrl(docPath);  // Use getAssetUrl to properly construct the URL
+        fullPath = docPath;
       } else if (!docPath.startsWith('http')) {
         // If just filename, construct full path
-        fullPath = getAssetUrl(`/assets/uploads/documents/${docPath}`);
+        fullPath = `/assets/uploads/documents/${docPath}`;
       }
       
+      // Convert relative path to absolute URL to prevent router interception
+      const absoluteUrl = fullPath.startsWith('http') 
+        ? fullPath 
+        : `${window.location.origin}${fullPath}`;
+      
       // Open in new tab
-      window.open(fullPath, '_blank');
+      window.open(absoluteUrl, '_blank');
       toast.success('Opening document...');
     } catch (error) {
       console.error('View document error:', error);
