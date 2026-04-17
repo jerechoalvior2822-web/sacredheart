@@ -2093,11 +2093,11 @@ app.get('/api/documents/:filename', (req, res) => {
 
 // Fallback to serve index.html for client-side routing (SPA)
 app.use((req, res) => {
-  // Don't serve index.html for API routes
-  if (!req.path.startsWith('/api')) {
-    res.sendFile(path.join(__dirname, '../dist/index.html'));
+  // Don't serve index.html for API routes or static assets
+  if (req.path.startsWith('/api') || req.path.startsWith('/assets')) {
+    res.status(404).json({ error: 'Not found' });
   } else {
-    res.status(404).json({ error: 'API route not found' });
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
   }
 });
 

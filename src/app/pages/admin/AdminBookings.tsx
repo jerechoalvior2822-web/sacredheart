@@ -435,18 +435,25 @@ Certificate ID: CERT-${booking.id}
                                     size="sm"
                                     onClick={() => {
                                       // Documents stored as /assets/uploads/documents/filename.pdf
-                                      // Use absolute URL to bypass React Router
                                       let fullPath = doc;
                                       if (doc.startsWith('/assets')) {
                                         fullPath = doc;
                                       } else if (!doc.startsWith('http')) {
                                         fullPath = `/assets/uploads/documents/${doc}`;
                                       }
-                                      // Convert relative path to absolute URL to prevent router interception
+                                      // Convert to absolute URL
                                       const absoluteUrl = fullPath.startsWith('http') 
                                         ? fullPath 
                                         : `${window.location.origin}${fullPath}`;
-                                      window.open(absoluteUrl, '_blank');
+                                      
+                                      // Create anchor and open in new tab (don't download)
+                                      const link = document.createElement('a');
+                                      link.href = absoluteUrl;
+                                      link.target = '_blank';
+                                      link.rel = 'noopener noreferrer';
+                                      document.body.appendChild(link);
+                                      link.click();
+                                      document.body.removeChild(link);
                                     }}
                                   >
                                     View

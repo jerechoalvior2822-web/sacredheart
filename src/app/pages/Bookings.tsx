@@ -189,7 +189,6 @@ Generated on: ${new Date().toLocaleString()}
       let fullPath = docPath;
       
       // Documents are stored as /assets/uploads/documents/filename.pdf
-      // Convert relative paths to absolute URLs to bypass React Router
       if (docPath.startsWith('/assets')) {
         fullPath = docPath;
       } else if (!docPath.startsWith('http')) {
@@ -197,13 +196,20 @@ Generated on: ${new Date().toLocaleString()}
         fullPath = `/assets/uploads/documents/${docPath}`;
       }
       
-      // Convert relative path to absolute URL to prevent router interception
+      // Convert relative path to absolute URL
       const absoluteUrl = fullPath.startsWith('http') 
         ? fullPath 
         : `${window.location.origin}${fullPath}`;
       
-      // Open in new tab
-      window.open(absoluteUrl, '_blank');
+      // Create anchor element and trigger click to open in new tab
+      const link = document.createElement('a');
+      link.href = absoluteUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
       toast.success('Opening document...');
     } catch (error) {
       console.error('View document error:', error);
