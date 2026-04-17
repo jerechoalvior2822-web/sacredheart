@@ -605,7 +605,7 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ error: 'Email is already registered' });
     }
 
-    const insertQuery = 'INSERT INTO users (name, email, password_hash, phone, address, role, is_verified) VALUES ($1, $2, $3, $4, $5, $6, 0)';
+    const insertQuery = 'INSERT INTO users (name, email, password_hash, phone, address, role, is_verified) VALUES ($1, $2, $3, $4, $5, $6, false)';
     db.query(insertQuery, [name, emailLower, passwordHash, phone || '', address || '', 'user'], async (insertErr, result) => {
       if (insertErr) {
         console.error('Error creating user:', insertErr);
@@ -676,7 +676,7 @@ app.post('/api/auth/verify-email', (req, res) => {
         return res.status(400).json({ error: 'OTP expired' });
       }
 
-      db.query('UPDATE users SET is_verified = 1 WHERE email = $1', [emailLower], (updateErr) => {
+      db.query('UPDATE users SET is_verified = true WHERE email = $1', [emailLower], (updateErr) => {
         if (updateErr) {
           console.error('Error verifying user:', updateErr);
           return res.status(500).json({ error: updateErr.message });
