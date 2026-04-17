@@ -121,7 +121,7 @@ export function Messages() {
   useEffect(() => {
     const interval = setInterval(fetchMessages, 5000);
     return () => clearInterval(interval);
-  }, [user, previousAdminMessageCount, notifications.unreadMessages];
+  }, [user, previousAdminMessageCount, notifications.unreadMessages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
