@@ -228,6 +228,25 @@ db.connect((err) => {
       );
     `;
 
+    const createBookingsTable = `
+      CREATE TABLE IF NOT EXISTS bookings (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        service VARCHAR(255),
+        date DATE,
+        time VARCHAR(20),
+        status VARCHAR(50) DEFAULT 'pending',
+        documents TEXT,
+        fee VARCHAR(50),
+        payment_status VARCHAR(50),
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_bookings_user ON bookings(user_id);
+      CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status);
+    `;
+
     const createMessagesTable = `
       CREATE TABLE IF NOT EXISTS messages (
         id SERIAL PRIMARY KEY,
@@ -404,6 +423,12 @@ db.connect((err) => {
     db.query(createMassSchedulesTable, (tableErr) => {
       if (tableErr) {
         console.error('Failed to create mass_schedules table:', tableErr);
+      }
+    });
+
+    db.query(createBookingsTable, (tableErr) => {
+      if (tableErr) {
+        console.error('Failed to create bookings table:', tableErr);
       }
     });
 
@@ -858,11 +883,12 @@ app.get('/api/bookings', (req, res) => {
 // Get booked dates for a service (for calendar blocking)
 app.get('/api/bookings/booked-dates', (req, res) => {
   const { serviceId } = req.query;
-  let query = `SELECT CAST(DATE_FORMAT(date, '%Y-%m-%d') AS CHAR) as date FROM bookings WHERE status != 'cancelled'`;
+  let query = `SELECT DISTINCT TO_CHAR(date, 'YYYY-MM-DD') as date FROM bookings WHERE status != 'cancelled'`;
   const params = [];
+  let paramCount = 1;
 
   if (serviceId) {
-    query += ' AND service_id = ?';
+    query += ' AND service = $' + paramCount;
     params.push(serviceId);
   }
 
@@ -871,7 +897,7 @@ app.get('/api/bookings/booked-dates', (req, res) => {
       res.status(500).json({ error: err.message });
     } else {
       // Return as unique date array
-      const dates = [...new Set(results.map(r => r.date))];
+      const dates = results.map(r => r.date);
       res.json(dates);
     }
   });
@@ -1656,7 +1682,7 @@ app.delete('/api/users/:id', (req, res) => {
   const { id } = req.params;
   
   // First, delete all bookings related to this user
-  const deleteBookingsQuery = 'DELETE FROM bookings WHERE user_id = ?';
+  const deleteBookingsQuery = 'DELETE FROM bookings WHERE user_id = $1';
   db.query(deleteBookingsQuery, [id], (err) => {
     if (err) {
       return res.status(500).json({ error: 'Failed to delete user bookings: ' + err.message });
