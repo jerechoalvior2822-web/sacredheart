@@ -2075,9 +2075,14 @@ app.get('/api/documents/:filename', (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
     
+    console.log('[DEBUG] Document request:', filename);
+    console.log('[DEBUG] Full path:', filepath);
+    console.log('[DEBUG] Path exists:', require('fs').existsSync(filepath));
+    
     res.download(filepath, (err) => {
       if (err) {
         if (err.code === 'ENOENT') {
+          console.error('[DEBUG] File not found:', filepath);
           res.status(404).json({ error: 'Document not found' });
         } else {
           console.error('Download error:', err);
@@ -2091,13 +2096,41 @@ app.get('/api/documents/:filename', (req, res) => {
   }
 });
 
+// Debug endpoint to list files in documents folder
+app.get('/api/debug/documents', (req, res) => {
+  try {
+    const fs = require('fs');
+    const docsPath = path.join(__dirname, '../assets/uploads/documents');
+    
+    console.log('[DEBUG] Listing documents from:', docsPath);
+    console.log('[DEBUG] Path exists:', fs.existsSync(docsPath));
+    
+    if (!fs.existsSync(docsPath)) {
+      return res.json({ 
+        error: 'Documents directory does not exist',
+        path: docsPath
+      });
+    }
+    
+    const files = fs.readdirSync(docsPath);
+    res.json({ 
+      path: docsPath,
+      files: files,
+      count: files.length
+    });
+  } catch (err) {
+    console.error('[DEBUG] Error listing documents:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Fallback to serve index.html for client-side routing (SPA)
 app.use((req, res) => {
-  // Don't serve index.html for API routes or static assets
-  if (req.path.startsWith('/api') || req.path.startsWith('/assets')) {
-    res.status(404).json({ error: 'Not found' });
-  } else {
+  // Don't serve index.html for API routes
+  if (!req.path.startsWith('/api')) {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
+  } else {
+    res.status(404).json({ error: 'API route not found' });
   }
 });
 
