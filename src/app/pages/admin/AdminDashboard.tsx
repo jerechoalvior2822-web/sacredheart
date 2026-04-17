@@ -63,10 +63,24 @@ export function AdminDashboard() {
         setUsersMap(newUsersMap);
 
         const bookingsArray = Array.isArray(bookingsData) ? bookingsData : [];
-        setBookings(bookingsArray.map((booking: any) => ({
-          ...booking,
-          documents: booking.documents ? JSON.parse(booking.documents) : [],
-        })));
+        setBookings(bookingsArray.map((booking: any) => {
+          // Safely parse documents - handle both string and array cases
+          let parsedDocuments: any[] = [];
+          if (typeof booking.documents === 'string') {
+            try {
+              parsedDocuments = JSON.parse(booking.documents);
+            } catch {
+              parsedDocuments = [];
+            }
+          } else if (Array.isArray(booking.documents)) {
+            parsedDocuments = booking.documents;
+          }
+          
+          return {
+            ...booking,
+            documents: parsedDocuments,
+          };
+        }));
         setDonations(Array.isArray(donationsData) ? donationsData : []);
       } catch (err) {
         setError((err as Error).message || 'Unable to load dashboard data');

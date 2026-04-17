@@ -85,15 +85,29 @@ export function Bookings() {
       .then(res => res.json())
       .then(data => {
         const bookingsArray = Array.isArray(data) ? data : [];
-        const mapped: any[] = bookingsArray.map((b: any) => ({
-          ...b,
-          status: b.status === 'confirmed' ? 'Approved' : b.status === 'cancelled' ? 'Rejected' : 'Pending',
-          documents: JSON.parse(b.documents || '[]'),
-          paymentStatus: b.payment_status,
-          time: formatTime(b.time),
-          date: new Date(b.date).toLocaleDateString('en-US'),
-          documentsRequested: b.status === 'pending' ? ['Birth Certificates', 'Baptismal Certificates', 'Pre-Cana Certificate'] : []
-        }));
+        const mapped: any[] = bookingsArray.map((b: any) => {
+          // Safely parse documents - handle both string and array cases
+          let parsedDocuments: any[] = [];
+          if (typeof b.documents === 'string') {
+            try {
+              parsedDocuments = JSON.parse(b.documents || '[]');
+            } catch {
+              parsedDocuments = [];
+            }
+          } else if (Array.isArray(b.documents)) {
+            parsedDocuments = b.documents;
+          }
+          
+          return {
+            ...b,
+            status: b.status === 'confirmed' ? 'Approved' : b.status === 'cancelled' ? 'Rejected' : 'Pending',
+            documents: parsedDocuments,
+            paymentStatus: b.payment_status,
+            time: formatTime(b.time),
+            date: new Date(b.date).toLocaleDateString('en-US'),
+            documentsRequested: b.status === 'pending' ? ['Birth Certificates', 'Baptismal Certificates', 'Pre-Cana Certificate'] : []
+          };
+        });
 
         // Use actual logged-in user's ID
         const currentUserId = parseInt(user?.id || '0', 10);

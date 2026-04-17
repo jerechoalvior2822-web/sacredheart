@@ -1570,11 +1570,16 @@ app.post('/api/bookings/upload-documents', upload.any(), (req, res) => {
       if (err) return res.status(500).json({ error: err.message });
       
       let currentDocs = [];
-      if (results.length > 0 && results[0].documents) {
-        try {
-          currentDocs = JSON.parse(results[0].documents);
-        } catch (e) {
-          currentDocs = [];
+      if (results && results.length > 0 && results[0].documents) {
+        // Handle both string and array formats
+        if (typeof results[0].documents === 'string') {
+          try {
+            currentDocs = JSON.parse(results[0].documents);
+          } catch (e) {
+            currentDocs = [];
+          }
+        } else if (Array.isArray(results[0].documents)) {
+          currentDocs = results[0].documents;
         }
       }
 

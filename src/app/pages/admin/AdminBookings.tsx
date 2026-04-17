@@ -44,11 +44,24 @@ export function AdminBookings() {
               name: booking.user || `User #${booking.user_id}`,
               email: booking.email || 'No email provided',
             };
+            
+            // Safely parse documents - handle both string and array cases
+            let parsedDocuments: any[] = [];
+            if (typeof booking.documents === 'string') {
+              try {
+                parsedDocuments = JSON.parse(booking.documents);
+              } catch {
+                parsedDocuments = [];
+              }
+            } else if (Array.isArray(booking.documents)) {
+              parsedDocuments = booking.documents;
+            }
+            
             return {
               ...booking,
               userName: userInfo.name,
               userEmail: userInfo.email,
-              documents: booking.documents ? JSON.parse(booking.documents) : [],
+              documents: parsedDocuments,
             };
           })
         );
