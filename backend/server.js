@@ -701,7 +701,7 @@ app.post('/api/auth/verify-email', (req, res) => {
         return res.status(400).json({ error: 'OTP expired' });
       }
 
-      db.query('UPDATE users SET is_verified = truerue WHERE email = $1', [emailLower], (updateErr) => {
+      db.query('UPDATE users SET is_verified = true WHERE email = $1', [emailLower], (updateErr) => {
         if (updateErr) {
           console.error('Error verifying user:', updateErr);
           return res.status(500).json({ error: updateErr.message });
@@ -911,7 +911,7 @@ app.post('/api/bookings', (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json({ id: result.insertId, message: 'Booking created successfully' });
+      res.json({ id: result[0]?.id, message: 'Booking created successfully' });
     }
   });
 });
@@ -1029,7 +1029,7 @@ app.post('/api/announcements/:id/comments', (req, res) => {
       return res.status(500).json({ error: err.message });
     }
     const comment = {
-      id: result.insertId,
+      id: result[0]?.id,
       announcementId: Number(id),
       parentCommentId: parentCommentId ? Number(parentCommentId) : null,
       user: String(user).trim(),
@@ -1055,7 +1055,7 @@ app.get('/api/announcements/:id/comments', (req, res) => {
            c.user,
            c.user_id AS userId,
            c.text,
-           CAST(DATE_FORMAT(c.created_at, "%Y-%m-%d %H:%i:%s") AS CHAR) AS created_at,
+           TO_CHAR(c.created_at, 'YYYY-MM-DD HH24:MI:SS') AS created_at,
            COALESCE(cl.likeCount, 0) AS likeCount,
            COALESCE(clu.likedByUser, 0) AS likedByCurrentUser
     FROM announcement_comments c
@@ -1063,9 +1063,9 @@ app.get('/api/announcements/:id/comments', (req, res) => {
       SELECT comment_id, COUNT(*) AS likeCount FROM announcement_comment_likes GROUP BY comment_id
     ) cl ON cl.comment_id = c.id
     LEFT JOIN (
-      SELECT comment_id, 1 AS likedByUser FROM announcement_comment_likes WHERE user_id = ?
+      SELECT comment_id, 1 AS likedByUser FROM announcement_comment_likes WHERE user_id = $1
     ) clu ON clu.comment_id = c.id
-    WHERE c.announcement_id = ?
+    WHERE c.announcement_id = $2
     ORDER BY c.created_at ASC
   `;
 
@@ -1205,7 +1205,7 @@ app.post('/api/announcements', upload.any(), (req, res) => {
       console.error('Error creating announcement:', err);
       return res.status(500).json({ error: err.message });
     }
-    res.json({ id: result.insertId, message: 'Announcement created successfully' });
+    res.json({ id: result[0]?.id, message: 'Announcement created successfully' });
   });
 });
 
@@ -1226,7 +1226,7 @@ app.post('/api/donations', (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json({ id: result.insertId, message: 'Donation submitted successfully' });
+      res.json({ id: result[0]?.id, message: 'Donation submitted successfully' });
     }
   });
 });
@@ -1300,7 +1300,7 @@ app.post('/api/services', upload.any(), (req, res) => {
         console.error('Service create error:', err, { body: req.body, files: req.files });
         res.status(500).json({ error: err.message });
       } else {
-        res.json({ id: result.insertId, message: 'Service created successfully' });
+        res.json({ id: result[0]?.id, message: 'Service created successfully' });
       }
     }
   );
@@ -1360,7 +1360,7 @@ app.post('/api/souvenirs', upload.any(), (req, res) => {
       console.error('Souvenir create error:', err, { body: req.body, files: req.files });
       res.status(500).json({ error: err.message });
     } else {
-      res.json({ id: result.insertId, message: 'Souvenir created successfully' });
+      res.json({ id: result[0]?.id, message: 'Souvenir created successfully' });
     }
   });
 });
@@ -1424,7 +1424,7 @@ app.post('/api/mass-schedules', (req, res) => {
       if (err) {
         res.status(500).json({ error: err.message });
       } else {
-        res.json({ id: result.insertId, message: 'Mass schedule created successfully' });
+        res.json({ id: result[0]?.id, message: 'Mass schedule created successfully' });
       }
     }
   );
@@ -1433,7 +1433,7 @@ app.post('/api/mass-schedules', (req, res) => {
 app.put('/api/mass-schedules/:id', (req, res) => {
   const { id } = req.params;
   const { massDay, massTime, date, status, collectors, lectors, eucharisticMinisters, altarServers, choirLeader, ushers } = req.body;
-  const query = 'UPDATE mass_schedules SET mass_day = ?, mass_time = ?, date = ?, status = ?, collectors = ?, lectors = ?, eucharistic_ministers = ?, altar_servers = ?, choir_leader = ?, ushers = ? WHERE id = ?';
+  const query = 'UPDATE mass_schedules SET mass_day = $1, mass_time = $2, date = $3, status = $4, collectors = $5, lectors = $6, eucharistic_ministers = $7, altar_servers = $8, choir_leader = $9, ushers = $10 WHERE id = $11';
   db.query(
     query,
     [massDay, massTime, date, status, JSON.stringify(collectors || []), JSON.stringify(lectors || []), JSON.stringify(eucharisticMinisters || []), JSON.stringify(altarServers || []), choirLeader || '', JSON.stringify(ushers || []), id],
@@ -1503,7 +1503,7 @@ app.post('/api/messages', (req, res) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.json({ id: result.insertId, message: 'Message saved successfully' });
+      res.json({ id: result[0]?.id, message: 'Message saved successfully' });
     }
   });
 });
@@ -1578,7 +1578,7 @@ app.put('/api/announcements/:id', upload.any(), (req, res) => {
 
   console.log('PUT /api/announcements/:id', { id, title, content, type, date, imagePath, hasFile: Boolean(file), bodyKeys: Object.keys(body) });
 
-  const updateQuery = `UPDATE announcements SET title=?, content=?, type=?, date=?, image=? WHERE id=?`;
+  const updateQuery = `UPDATE announcements SET title=$1, content=$2, type=$3, date=$4, image=$5 WHERE id=$6`;
 
   db.query(updateQuery, [title, content, type, date || null, imagePath, id], (err) => {
     if (err) {
@@ -1689,7 +1689,7 @@ app.delete('/api/users/:id', (req, res) => {
     }
     
     // Then delete donations
-    const deleteDonationsQuery = 'DELETE FROM donations WHERE user_id = ?';
+    const deleteDonationsQuery = 'DELETE FROM donations WHERE user_id = $1';
     db.query(deleteDonationsQuery, [id], (err) => {
       if (err) {
         return res.status(500).json({ error: 'Failed to delete user donations: ' + err.message });
@@ -1763,7 +1763,7 @@ app.put('/api/carousel/:id', upload.single('image'), (req, res) => {
   const { title, description, orderPosition, isActive } = req.body;
   
   // First get existing image to keep it if no new image is uploaded
-  const getQuery = 'SELECT image_path FROM carousel_images WHERE id = ?';
+  const getQuery = 'SELECT image_path FROM carousel_images WHERE id = $1';
   db.query(getQuery, [id], (getErr, getResults) => {
     if (getErr) {
       return res.status(500).json({ error: getErr.message });
