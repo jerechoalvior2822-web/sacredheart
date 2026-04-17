@@ -297,7 +297,7 @@ db.connect((err) => {
         console.error('Failed to create services table:', tableErr);
       } else {
         // Seed default parish services when the table is empty
-        db.query('SELECT COUNT(*) AS count FROM services', (countErr, countResults) => {
+        db.query('SELECT COUNT(*) AS count FROM services', [], (countErr, countResults) => {
           if (countErr) {
             console.error('Failed to count services:', countErr);
             return;
@@ -451,7 +451,7 @@ db.connect((err) => {
       }
     });
 
-    db.query('ALTER TABLE IF EXISTS announcements ADD COLUMN IF NOT EXISTS likes INTEGER DEFAULT 0', (alterErr) => {
+    db.query('ALTER TABLE IF EXISTS announcements ADD COLUMN IF NOT EXISTS likes INTEGER DEFAULT 0', [], (alterErr) => {
       if (alterErr) {
         console.error('Failed to ensure likes column on announcements:', alterErr);
       }
@@ -543,13 +543,13 @@ db.connect((err) => {
       }
     });
 
-    db.query('ALTER TABLE IF EXISTS announcement_comments ADD COLUMN IF NOT EXISTS parent_comment_id INTEGER', (alterErr) => {
+    db.query('ALTER TABLE IF EXISTS announcement_comments ADD COLUMN IF NOT EXISTS parent_comment_id INTEGER', [], (alterErr) => {
       if (alterErr) {
         console.error('Failed to add parent_comment_id to announcement_comments:', alterErr);
       }
     });
 
-    db.query('ALTER TABLE IF EXISTS announcement_comments ADD COLUMN IF NOT EXISTS user_id VARCHAR(255) DEFAULT \'0\'', (alterErr) => {
+    db.query('ALTER TABLE IF EXISTS announcement_comments ADD COLUMN IF NOT EXISTS user_id VARCHAR(255) DEFAULT \'0\'', [], (alterErr) => {
       if (alterErr) {
         console.error('Failed to add user_id to announcement_comments:', alterErr);
       }
@@ -871,7 +871,7 @@ app.get('/api/bookings', (req, res) => {
     paramCount++;
   }
 
-  db.query(query, params, (err, results) => {
+  db.query(query, params || [], (err, results) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
@@ -892,7 +892,7 @@ app.get('/api/bookings/booked-dates', (req, res) => {
     params.push(serviceId);
   }
 
-  db.query(query, params, (err, results) => {
+  db.query(query, params || [], (err, results) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
@@ -932,7 +932,7 @@ app.get('/api/announcements', (req, res) => {
     ORDER BY a.created_at DESC
   `;
 
-  db.query(query, (err, results) => {
+  db.query(query, [], (err, results) => {
     if (err) {
       console.error('Error fetching announcements:', err);
       res.status(500).json({ error: err.message });
@@ -1210,7 +1210,7 @@ app.post('/api/announcements', upload.any(), (req, res) => {
 });
 
 app.get('/api/donations', (req, res) => {
-  db.query('SELECT id, user_id, donation_type, amount, payment_method, message, proof_file_name, to_char(created_at, \'YYYY-MM-DD HH24:MI:SS\') as created_at FROM donations ORDER BY created_at DESC', (err, results) => {
+  db.query('SELECT id, user_id, donation_type, amount, payment_method, message, proof_file_name, to_char(created_at, \'YYYY-MM-DD HH24:MI:SS\') as created_at FROM donations ORDER BY created_at DESC', [], (err, results) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
@@ -1270,6 +1270,7 @@ const parseJSONField = (value) => {
 app.get('/api/services', (req, res) => {
   db.query(
     'SELECT id, name, description, category, price, processing_time as processingTime, requirements, image, form_path as formPath, form_name as formName, form_fields as formFields FROM services ORDER BY name',
+    [],
     (err, results) => {
       if (err) {
         res.status(500).json({ error: err.message });
@@ -1340,7 +1341,7 @@ app.delete('/api/services/:id', (req, res) => {
 });
 
 app.get('/api/souvenirs', (req, res) => {
-  db.query('SELECT id, name, description, price, stock, image FROM souvenirs ORDER BY name', (err, results) => {
+  db.query('SELECT id, name, description, price, stock, image FROM souvenirs ORDER BY name', [], (err, results) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
@@ -1396,6 +1397,7 @@ app.delete('/api/souvenirs/:id', (req, res) => {
 app.get('/api/mass-schedules', (req, res) => {
   db.query(
     'SELECT id, mass_day AS massDay, mass_time AS massTime, TO_CHAR(date, \'YYYY-MM-DD\') as date, status, collectors, lectors, eucharistic_ministers AS eucharisticMinisters, altar_servers AS altarServers, choir_leader AS choirLeader, ushers FROM mass_schedules ORDER BY date, mass_time',
+    [],
     (err, results) => {
       if (err) {
         res.status(500).json({ error: err.message });
@@ -1619,7 +1621,7 @@ app.use((err, req, res, next) => {
 // Organization Members Endpoints
 app.get('/api/org-members', (req, res) => {
   const query = 'SELECT id, name, position, department, email, phone, photo, level, parent_id AS parentId FROM org_members ORDER BY level ASC, name ASC';
-  db.query(query, (err, results) => {
+  db.query(query, [], (err, results) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
@@ -1668,7 +1670,7 @@ app.delete('/api/org-members/:id', (req, res) => {
 // Users endpoint
 app.get('/api/users', (req, res) => {
   const query = 'SELECT id, name, email, role, is_verified, phone, address FROM users';
-  db.query(query, (err, results) => {
+  db.query(query, [], (err, results) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
@@ -1717,7 +1719,7 @@ app.delete('/api/users/:id', (req, res) => {
 // Get all carousel images (active ones)
 app.get('/api/carousel', (req, res) => {
   const query = 'SELECT id, title, description, image_path, order_position FROM carousel_images WHERE is_active = true ORDER BY order_position ASC';
-  db.query(query, (err, results) => {
+  db.query(query, [], (err, results) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
@@ -1729,7 +1731,7 @@ app.get('/api/carousel', (req, res) => {
 // Get all carousel images for admin (including inactive)
 app.get('/api/carousel/admin/all', (req, res) => {
   const query = 'SELECT id, title, description, image_path, order_position, is_active, created_at FROM carousel_images ORDER BY order_position ASC';
-  db.query(query, (err, results) => {
+  db.query(query, [], (err, results) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
