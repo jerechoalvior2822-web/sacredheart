@@ -45,3 +45,7 @@ coverage/
 # Upload directories (optional - only if you don't want to track uploads)
 assets/uploads/*
 !assets/uploads/.gitkeep
+!assets/uploads/documents/
+!assets/uploads/documents/.gitkeep
+!assets/uploads/carousel/
+!assets/uploads/carousel/.gitkeep
