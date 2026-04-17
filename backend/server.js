@@ -1309,24 +1309,41 @@ app.post('/api/services', upload.any(), (req, res) => {
 
 app.put('/api/services/:id', upload.any(), (req, res) => {
   const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: 'Service ID is required' });
+  }
+  
   const { name, description, category, price, processingTime, requirements, formPath, formName, formFields } = req.body || {};
   const parsedRequirements = parseJSONField(requirements);
   const parsedFormFields = parseJSONField(formFields);
   const file = Array.isArray(req.files) ? req.files.find((file) => file.fieldname === 'image') : null;
   const imagePath = file ? `/assets/uploads/${file.filename}` : (req.body?.image || '');
   const query = 'UPDATE services SET name = $1, description = $2, category = $3, price = $4, processing_time = $5, requirements = $6, image = $7, form_path = $8, form_name = $9, form_fields = $10 WHERE id = $11';
-  db.query(
-    query,
-    [name || '', description || '', category || '', price || '', processingTime || '', JSON.stringify(parsedRequirements), imagePath, formPath || '', formName || '', JSON.stringify(parsedFormFields), id],
-    (err) => {
-      if (err) {
-        console.error('Service update error:', err, { body: req.body, files: req.files });
-        res.status(500).json({ error: err.message });
-      } else {
-        res.json({ message: 'Service updated successfully' });
-      }
+  
+  const params = [
+    String(name || '').trim(),
+    String(description || '').trim(),
+    String(category || '').trim(),
+    String(price || '').trim(),
+    String(processingTime || '').trim(),
+    JSON.stringify(parsedRequirements),
+    imagePath,
+    String(formPath || '').trim(),
+    String(formName || '').trim(),
+    JSON.stringify(parsedFormFields),
+    parseInt(id, 10)
+  ];
+  
+  console.log('Service update params:', params);
+  
+  db.query(query, params, (err) => {
+    if (err) {
+      console.error('Service update error:', err, { body: req.body, files: req.files, params });
+      res.status(500).json({ error: err.message });
+    } else {
+      res.json({ message: 'Service updated successfully' });
     }
-  );
+  });
 });
 
 app.delete('/api/services/:id', (req, res) => {
@@ -1368,14 +1385,29 @@ app.post('/api/souvenirs', upload.any(), (req, res) => {
 
 app.put('/api/souvenirs/:id', upload.any(), (req, res) => {
   const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: 'Souvenir ID is required' });
+  }
+  
   const { name, description, price, stock } = req.body || {};
   const file = Array.isArray(req.files) ? req.files.find((file) => file.fieldname === 'image') : null;
   const imagePath = file ? `/assets/uploads/${file.filename}` : (req.body?.image || '');
   
   const query = 'UPDATE souvenirs SET name = $1, description = $2, price = $3, stock = $4, image = $5 WHERE id = $6';
-  db.query(query, [name || '', description || '', price || '', stock || 0, imagePath, id], (err) => {
+  const params = [
+    String(name || '').trim(),
+    String(description || '').trim(),
+    String(price || '').trim(),
+    parseInt(stock || 0, 10),
+    imagePath,
+    parseInt(id, 10)
+  ];
+  
+  console.log('Souvenir update params:', params);
+  
+  db.query(query, params, (err) => {
     if (err) {
-      console.error('Souvenir update error:', err, { body: req.body, files: req.files });
+      console.error('Souvenir update error:', err, { body: req.body, files: req.files, params });
       res.status(500).json({ error: err.message });
     } else {
       res.json({ message: 'Souvenir updated successfully' });
@@ -1568,6 +1600,10 @@ app.post('/api/bookings/upload-documents', upload.any(), (req, res) => {
 
 app.put('/api/announcements/:id', upload.any(), (req, res) => {
   const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: 'Announcement ID is required' });
+  }
+  
   const body = req.body || {};
   const file = Array.isArray(req.files) ? req.files.find((file) => file.fieldname === 'image') : null;
   const title = String(body.title || '').trim();
@@ -1581,10 +1617,13 @@ app.put('/api/announcements/:id', upload.any(), (req, res) => {
   console.log('PUT /api/announcements/:id', { id, title, content, type, date, imagePath, hasFile: Boolean(file), bodyKeys: Object.keys(body) });
 
   const updateQuery = `UPDATE announcements SET title=$1, content=$2, type=$3, date=$4, image=$5 WHERE id=$6`;
+  const params = [title, content, type, date || null, imagePath, parseInt(id, 10)];
 
-  db.query(updateQuery, [title, content, type, date || null, imagePath, id], (err) => {
+  console.log('Announcement update params:', params);
+
+  db.query(updateQuery, params, (err) => {
     if (err) {
-      console.error('Error updating announcement:', err);
+      console.error('Error updating announcement:', err, { params });
       return res.status(500).json({ error: err.message });
     }
     res.json({ message: 'Announcement updated successfully' });
