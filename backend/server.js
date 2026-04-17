@@ -122,12 +122,36 @@ const generateOtp = () => {
 };
 
 // Database connection pool
-const pool = new pg.Pool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'sacred_heart',
-  port: process.env.DB_PORT || 5432,
+const dbConfig = process.env.DATABASE_URL 
+  ? { connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } }
+  : {
+      host: process.env.DB_HOST || 'localhost',
+      user: process.env.DB_USER || 'postgres',
+      password: process.env.DB_PASSWORD || '',
+      database: process.env.DB_NAME || 'sacred_heart',
+      port: process.env.DB_PORT || 5432,
+    };
+
+console.log('[DB] Configuration:');
+if (process.env.DATABASE_URL) {
+  console.log('[DB] Using DATABASE_URL from environment');
+  console.log('[DB] URL (first 50 chars):', process.env.DATABASE_URL.substring(0, 50) + '...');
+} else {
+  console.log('[DB] Host:', dbConfig.host);
+  console.log('[DB] User:', dbConfig.user);
+  console.log('[DB] Database:', dbConfig.database);
+  console.log('[DB] Port:', dbConfig.port);
+}
+
+const pool = new pg.Pool(dbConfig);
+
+// Handle pool errors
+pool.on('error', (err) => {
+  console.error('[DB] Pool error:', err.message);
+});
+
+pool.on('connect', () => {
+  console.log('[DB] ✓ New connection established');
 });
 
 const db = {
@@ -2078,7 +2102,12 @@ app.use((req, res) => {
 });
 
 // Auto-create admin user on startup
-const ensureAdminUserExists = () => {
+const ensureAdminUserExists = (retries = 0) => {
+  if (retries > 10) {
+    console.error('[ADMIN] ✗ Failed to ensure admin user after 10 retries');
+    return;
+  }
+
   const adminEmail = 'shjp@admin.com';
   const adminPassword = 'SacredHeartJesusParish1997';
   const adminName = 'Sacred Heart Admin';
@@ -2086,7 +2115,9 @@ const ensureAdminUserExists = () => {
 
   db.query('SELECT id FROM users WHERE email = $1', [adminEmail], (err, results) => {
     if (err) {
-      console.error('Error checking for admin user:', err);
+      console.error(`[ADMIN] Error checking for admin user (attempt ${retries + 1}/10):`, err.message);
+      // Retry after delay
+      setTimeout(() => ensureAdminUserExists(retries + 1), 2000);
       return;
     }
 
@@ -2097,9 +2128,9 @@ const ensureAdminUserExists = () => {
         ['admin', adminEmail],
         (updateErr) => {
           if (updateErr) {
-            console.error('Error updating admin user:', updateErr);
+            console.error('[ADMIN] ✗ Error updating admin user:', updateErr.message);
           } else {
-            console.log('✅ Admin user verified and updated');
+            console.log('[ADMIN] ✓ Admin user verified and updated');
           }
         }
       );
@@ -2110,9 +2141,9 @@ const ensureAdminUserExists = () => {
         [adminName, adminEmail, adminPasswordHash, '', '', 'admin'],
         (insertErr) => {
           if (insertErr) {
-            console.error('Error creating admin user:', insertErr);
+            console.error('[ADMIN] ✗ Error creating admin user:', insertErr.message);
           } else {
-            console.log('✅ Admin user created successfully!');
+            console.log('[ADMIN] ✓ Admin user created successfully!');
             console.log(`   Email: ${adminEmail}`);
             console.log(`   Password: ${adminPassword}`);
           }
@@ -2124,7 +2155,19 @@ const ensureAdminUserExists = () => {
 
 // Start server
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`[SERVER] ✓ Server running on port ${port}`);
   // Ensure admin user exists after short delay to allow DB connection to stabilize
   setTimeout(ensureAdminUserExists, 1000);
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('[ERROR] Uncaught Exception:', err.message);
+  console.error('[ERROR] Stack:', err.stack);
+  process.exit(1);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[ERROR] Unhandled Rejection at:', promise, 'reason:', reason);
 });
