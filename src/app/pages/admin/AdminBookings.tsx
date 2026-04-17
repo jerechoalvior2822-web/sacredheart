@@ -429,13 +429,17 @@ Certificate ID: CERT-${booking.id}
                             <div className="space-y-2">
                               {docs.map((doc, idx) => (
                                 <div key={idx} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
-                                  <span className="text-sm">{doc}</span>
+                                  <span className="text-sm">{doc.split('/').pop() || `Document ${idx + 1}`}</span>
                                   <Button 
                                     variant="ghost" 
                                     size="sm"
                                     onClick={() => {
-                                      const downloadUrl = getApiUrl(`/api/documents/${encodeURIComponent(doc)}`);;
-                                      window.open(downloadUrl, '_blank');
+                                      // Documents are stored as full paths like /assets/uploads/documents/filename.pdf
+                                      let viewUrl = doc;
+                                      if (!doc.startsWith('http')) {
+                                        viewUrl = getAssetUrl(doc);  // Properly construct the full URL for static file serving
+                                      }
+                                      window.open(viewUrl, '_blank');
                                     }}
                                   >
                                     View
