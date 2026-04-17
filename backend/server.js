@@ -1075,7 +1075,7 @@ app.get('/api/announcements/:id/comments', (req, res) => {
       return res.status(500).json({ error: err.message });
     }
 
-    const comments = (results || []).map((comment) => ({
+    const comments = (results?.rows || []).map((comment) => ({
       ...comment,
       likedByCurrentUser: Boolean(comment.likedByCurrentUser),
       likeCount: Number(comment.likeCount || 0),
@@ -1400,7 +1400,7 @@ app.get('/api/mass-schedules', (req, res) => {
       if (err) {
         res.status(500).json({ error: err.message });
       } else {
-        const formatted = (results || []).map((schedule) => ({
+        const formatted = (results?.rows || []).map((schedule) => ({
           ...schedule,
           collectors: parseJSONField(schedule.collectors),
           lectors: parseJSONField(schedule.lectors),
