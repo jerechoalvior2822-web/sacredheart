@@ -30,7 +30,6 @@ import { AdminServices } from './pages/admin/AdminServices';
 import { AdminBookings } from './pages/admin/AdminBookings';
 import { AdminDonations } from './pages/admin/AdminDonations';
 import { AdminReports } from './pages/admin/AdminReports';
-import { AdminOfficeHours } from './pages/admin/AdminOfficeHours';
 import { AdminSouvenirs } from './pages/admin/AdminSouvenirs';
 import { AdminAnnouncements } from './pages/admin/AdminAnnouncements';
 import { AdminOrgChart } from './pages/admin/AdminOrgChart';
@@ -232,14 +231,6 @@ export default function App() {
               element={
                 <ProtectedRoute adminOnly>
                   <AdminMassSchedules />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/office-hours"
-              element={
-                <ProtectedRoute adminOnly>
-                  <AdminOfficeHours />
                 </ProtectedRoute>
               }
             />
