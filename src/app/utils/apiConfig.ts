@@ -2,32 +2,25 @@
  * API Configuration
  * Centralized API URL management for frontend
  * 
- * Environment variable: VITE_API_URL
- * - Local development: http://localhost:3001
- * - Render production: (uses relative URLs, same domain)
+ * - Local development (localhost): http://localhost:3001
+ * - Render production (non-localhost): relative URLs (same domain)
  */
 
-// Use relative URLs on production (same domain) or VITE_API_URL if provided
+// Use relative URLs on production (same domain) or localhost URL in development
 const getApiBaseUrl = (): string => {
-  // If environment variable is set, use it
-  if (import.meta.env.VITE_API_URL) {
-    console.log('[API Config] Using VITE_API_URL:', import.meta.env.VITE_API_URL);
-    return import.meta.env.VITE_API_URL;
-  }
-  
-  // In production, use relative URLs (same origin)
+  // In production (non-localhost domain), use relative URLs
   if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-    console.log('[API Config] Using relative URLs (production mode)', 'hostname:', window.location.hostname);
+    console.log('[API Config] Production mode - Using relative URLs. Domain:', window.location.hostname);
     return ''; // Empty string = relative URLs, same domain
   }
   
-  // Default to localhost for development
-  console.log('[API Config] Using localhost (development mode)');
+  // Default to localhost for local development
+  console.log('[API Config] Development mode - Using localhost:3001');
   return 'http://localhost:3001';
 };
 
 export const API_BASE_URL = getApiBaseUrl();
-console.log('[API Config] API_BASE_URL:', API_BASE_URL || '(relative URLs)');
+console.log('[API Config] API_BASE_URL set to:', API_BASE_URL || '(relative URLs)');
 
 /**
  * Helper to build full API URLs
@@ -36,7 +29,7 @@ console.log('[API Config] API_BASE_URL:', API_BASE_URL || '(relative URLs)');
  */
 export const getApiUrl = (endpoint: string): string => {
   const fullUrl = `${API_BASE_URL}${endpoint}`;
-  console.log('[API Config] Building API URL:', { endpoint, fullUrl });
+  console.log('[API Config] API Call:', fullUrl);
   return fullUrl;
 };
 
