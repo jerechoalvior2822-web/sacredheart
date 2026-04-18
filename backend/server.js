@@ -926,30 +926,7 @@ app.get('/api/bookings', (req, res) => {
   });
 });
 
-app.get('/api/bookings/:id', (req, res) => {
-  const { id } = req.params;
-  if (!id) {
-    return res.status(400).json({ error: 'Booking ID is required' });
-  }
-
-  const query = 'SELECT id, user_id, service, TO_CHAR(date, \'YYYY-MM-DD\') as date, time, status, documents, fee, payment_status, notes FROM bookings WHERE id = $1';
-  db.query(query, [parseInt(id, 10)], (err, results) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-    } else if (!results || results.length === 0) {
-      res.status(404).json({ error: 'Booking not found' });
-    } else {
-      // Parse documents field to ensure it's always an array
-      const booking = results[0];
-      res.json({
-        ...booking,
-        documents: parseJSONField(booking.documents) || []
-      });
-    }
-  });
-});
-
-// Get booked dates for a service (for calendar blocking)
+// Get booked dates for a service (for calendar blocking) - MUST come before /:id route
 app.get('/api/bookings/booked-dates', (req, res) => {
   const { service } = req.query;
   console.log('[Booked Dates] Query service param:', service);
@@ -985,6 +962,29 @@ app.get('/api/bookings/booked-dates', (req, res) => {
     console.error('[Booked Dates] Exception:', err);
     res.status(500).json({ error: 'Server error: ' + (err?.message || 'Unknown error') });
   }
+});
+
+app.get('/api/bookings/:id', (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: 'Booking ID is required' });
+  }
+
+  const query = 'SELECT id, user_id, service, TO_CHAR(date, \'YYYY-MM-DD\') as date, time, status, documents, fee, payment_status, notes FROM bookings WHERE id = $1';
+  db.query(query, [parseInt(id, 10)], (err, results) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else if (!results || results.length === 0) {
+      res.status(404).json({ error: 'Booking not found' });
+    } else {
+      // Parse documents field to ensure it's always an array
+      const booking = results[0];
+      res.json({
+        ...booking,
+        documents: parseJSONField(booking.documents) || []
+      });
+    }
+  });
 });
 
 // POST route to create a new booking
