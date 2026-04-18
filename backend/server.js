@@ -1675,8 +1675,10 @@ app.get('/api/messages', (req, res) => {
     `;
     db.query(query, (err, results) => {
       if (err) {
+        console.error('[Messages] Admin endpoint error:', err.message);
         res.status(500).json({ error: err.message });
       } else {
+        console.log('[Messages] Admin fetched', (results || []).length, 'messages');
         res.json(results || []);
       }
     });
@@ -1685,8 +1687,10 @@ app.get('/api/messages', (req, res) => {
     const query = 'SELECT id, user_id AS userId, text, sender, TO_CHAR(timestamp, \'YYYY-MM-DD"T"HH24:MI:SS\') as timestamp FROM messages WHERE user_id = $1 ORDER BY timestamp ASC';
     db.query(query, [userId], (err, results) => {
       if (err) {
+        console.error('[Messages] User endpoint error for user', userId, ':', err.message);
         res.status(500).json({ error: err.message });
       } else {
+        console.log('[Messages] User', userId, 'fetched', (results || []).length, 'messages');
         res.json(results || []);
       }
     });
