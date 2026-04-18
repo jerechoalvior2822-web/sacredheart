@@ -1525,9 +1525,16 @@ app.post('/api/souvenirs', upload.any(), (req, res) => {
   const imagePath = file ? `/assets/uploads/${file.filename}` : (req.body?.image || '');
   
   const query = 'INSERT INTO souvenirs (name, description, price, stock, image) VALUES ($1, $2, $3, $4, $5) RETURNING id';
-  db.query(query, [name || '', description || '', price || '', stock || 0, imagePath], (err, result) => {
+  const params = [
+    String(name || '').trim(),
+    String(description || '').trim(),
+    parseFloat(price) || 0,
+    parseInt(stock, 10) || 0,
+    imagePath
+  ];
+  db.query(query, params, (err, result) => {
     if (err) {
-      console.error('Souvenir create error:', err, { body: req.body, files: req.files });
+      console.error('Souvenir create error:', err, { body: req.body, files: req.files, params });
       res.status(500).json({ error: err.message });
     } else {
       res.json({ id: result?.[0]?.id, message: 'Souvenir created successfully' });
@@ -1549,8 +1556,8 @@ app.put('/api/souvenirs/:id', upload.any(), (req, res) => {
   const params = [
     String(name || '').trim(),
     String(description || '').trim(),
-    String(price || '').trim(),
-    parseInt(stock || 0, 10),
+    parseFloat(price) || 0,
+    parseInt(stock, 10) || 0,
     imagePath,
     parseInt(id, 10)
   ];
