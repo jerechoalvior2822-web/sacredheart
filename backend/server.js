@@ -1663,9 +1663,9 @@ app.get('/api/messages', (req, res) => {
     const query = `
       SELECT 
         m.id, 
-        m.user_id::INTEGER AS userId, 
-        COALESCE(u.name, 'Unknown User') AS userName,
-        COALESCE(u.email, '') AS userEmail,
+        m.user_id AS "userId", 
+        COALESCE(u.name, 'Unknown User') AS "userName",
+        COALESCE(u.email, '') AS "userEmail",
         m.text, 
         m.sender, 
         TO_CHAR(m.timestamp, 'YYYY-MM-DD"T"HH24:MI:SS') as timestamp 
