@@ -3,7 +3,7 @@ import { AdminLayout } from '../../components/AdminLayout';
 import { useNotifications } from '../../components/NotificationContext';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
-import { Send, Bot, User, Phone, PhoneOff } from 'lucide-react';
+import { Send, Bot, User } from 'lucide-react';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import { getApiUrl } from '../../utils/apiConfig';
@@ -36,8 +36,6 @@ export function AdminMessages() {
   const { setUnreadMessages } = useNotifications();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const [activeCallUserId, setActiveCallUserId] = useState<number | null>(null);
-  const [callDuration, setCallDuration] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 3;
 
@@ -147,39 +145,7 @@ export function AdminMessages() {
     }
   };
 
-  const handleInitiateCall = (userId: number) => {
-    setActiveCallUserId(userId);
-    toast.success('Call initiated with user...');
-    
-    try {
-      fetch(getApiUrl('/api/messages'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ user_id: userId, sender: 'admin', text: '📞 Admin initiated a call' }),
-      }).catch(err => console.error('Failed to log call:', err));
-    } catch (err) {
-      console.error('Error initiating call:', err);
-    }
-  };
 
-  const handleEndCall = () => {
-    setActiveCallUserId(null);
-    setCallDuration(0);
-    toast.info('Call ended');
-  };
-
-  // Simulate call duration timer
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (activeCallUserId) {
-      interval = setInterval(() => {
-        setCallDuration(prev => prev + 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [activeCallUserId]);
 
   const selectedConvo = conversations.find(c => c.userId === selectedUserId);
 
@@ -232,7 +198,7 @@ export function AdminMessages() {
           <div className="flex-1 border border-border rounded-lg overflow-hidden flex flex-col">
             {selectedConvo ? (
               <>
-                <div className="p-4 border-b border-border bg-secondary/50 flex items-center justify-between">
+                <div className="p-4 border-b border-border bg-secondary/50">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">
                       <User className="w-5 h-5 text-white" />
@@ -240,38 +206,9 @@ export function AdminMessages() {
                     <div>
                       <h3 className="font-semibold">{selectedConvo.userName || selectedConvo.userEmail || `User ${selectedConvo.userId}`}</h3>
                       <p className="text-xs text-muted-foreground">
-                        {activeCallUserId === selectedConvo.userId ? (
-                          <span className="text-green-600 font-medium">
-                            📞 Call Active - {Math.floor(callDuration / 60)}:{String(callDuration % 60).padStart(2, '0')}
-                          </span>
-                        ) : (
-                          `${selectedConvo.userEmail && selectedConvo.userName ? selectedConvo.userEmail : ''} • ${selectedConvo.messages.length} messages`
-                        )}
+                        {selectedConvo.userEmail && selectedConvo.userName ? selectedConvo.userEmail : ''} • {selectedConvo.messages.length} messages
                       </p>
                     </div>
-                  </div>
-                  <div>
-                    {activeCallUserId === selectedConvo.userId ? (
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={handleEndCall}
-                        className="flex items-center gap-2"
-                      >
-                        <PhoneOff className="w-4 h-4" />
-                        <span className="hidden sm:inline">End Call</span>
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleInitiateCall(selectedConvo.userId)}
-                        className="flex items-center gap-2"
-                      >
-                        <Phone className="w-4 h-4" />
-                        <span className="hidden sm:inline">Call User</span>
-                      </Button>
-                    )}
                   </div>
                 </div>
 
