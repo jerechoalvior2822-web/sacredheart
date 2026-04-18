@@ -705,36 +705,50 @@ app.post('/api/auth/verify-email', (req, res) => {
   }
 
   const emailLower = String(email).trim().toLowerCase();
+  console.log('[AUTH] Verifying email:', emailLower);
+  
   db.query(
     'SELECT id, expires_at, used FROM email_otps WHERE email = $1 AND otp_code = $2 AND type = $3 ORDER BY id DESC LIMIT 1',
     [emailLower, String(otp).trim(), 'verify'],
     (err, results) => {
       if (err) {
-        console.error('Error validating OTP:', err);
+        console.error('[AUTH] Error validating OTP:', err);
         return res.status(500).json({ error: err.message });
       }
 
       if (!results || results.length === 0) {
+        console.log('[AUTH] Invalid verification code for:', emailLower);
         return res.status(400).json({ error: 'Invalid verification code' });
       }
 
       const otpRow = results[0];
       const now = new Date();
       if (otpRow.used) {
+        console.log('[AUTH] OTP already used for:', emailLower);
         return res.status(400).json({ error: 'OTP already used' });
       }
 
       if (new Date(otpRow.expires_at) < now) {
+        console.log('[AUTH] OTP expired for:', emailLower);
         return res.status(400).json({ error: 'OTP expired' });
       }
 
+      // Update user verification status
       db.query('UPDATE users SET is_verified = true WHERE email = $1', [emailLower], (updateErr) => {
         if (updateErr) {
-          console.error('Error verifying user:', updateErr);
+          console.error('[AUTH] Error verifying user:', updateErr);
           return res.status(500).json({ error: updateErr.message });
         }
 
+        // Mark OTP as used
         db.query('UPDATE email_otps SET used = true WHERE id = $1', [otpRow.id], (usedErr) => {
+          if (usedErr) {
+            console.error('[AUTH] Error marking OTP as used:', usedErr);
+            return res.status(500).json({ error: usedErr.message });
+          }
+          
+          console.log('[AUTH] Email verified successfully:', emailLower);
+          res.json({ message: 'Email verified successfully' });
         });
       });
     }
