@@ -951,22 +951,23 @@ app.get('/api/bookings/:id', (req, res) => {
 
 // Get booked dates for a service (for calendar blocking)
 app.get('/api/bookings/booked-dates', (req, res) => {
-  const { serviceId } = req.query;
-  let query = `SELECT DISTINCT TO_CHAR(date, 'YYYY-MM-DD') as date FROM bookings WHERE status != 'cancelled'`;
+  const { service } = req.query;
+  let query = `SELECT DISTINCT TO_CHAR(date, 'YYYY-MM-DD') as date FROM bookings WHERE status NOT IN ('cancelled', 'rejected')`;
   const params = [];
-  let paramCount = 1;
 
-  if (serviceId) {
-    query += ' AND service = $' + paramCount;
-    params.push(serviceId);
+  if (service) {
+    query += ' AND service = $1';
+    params.push(String(service));
   }
 
-  db.query(query, params || [], (err, results) => {
+  db.query(query, params, (err, results) => {
     if (err) {
+      console.error('Error fetching booked dates:', err);
       res.status(500).json({ error: err.message });
     } else {
       // Return as unique date array
       const dates = (results || []).map(r => r.date);
+      console.log('Booked dates for service:', service, '=', dates);
       res.json(dates);
     }
   });
