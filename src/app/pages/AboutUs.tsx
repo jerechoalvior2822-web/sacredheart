@@ -105,17 +105,58 @@ export function AboutUs() {
           <Card className="mb-12">
             <CardBody className="p-6">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                Our Sacred Heart Parish
+                Our History
               </h2>
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-3">
-                Sacred Heart Parish is dedicated to serving our community with compassion, faith, and dedication. 
-                Our organization brings together committed individuals from various roles and departments working towards 
-                a common mission of spiritual growth and service to our parishioners.
-              </p>
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                Our hierarchical structure ensures effective leadership, clear communication, and efficient service delivery 
-                across all aspects of parish life and ministry.
-              </p>
+              <div className="space-y-4 text-gray-700 dark:text-gray-300 leading-relaxed">
+                <p>
+                  The Sacred Heart of Jesus Parish Mandaluyong had its humble beginning as a chapel built inside the Welfareville Compound of Mandaluyong. Rev. Fr. Isidro L. Jose was assigned on February 2, 1947 as chaplain to look after the spiritual welfare of the inmates at Welfareville. After four years, he thought that it was time to get his people a proper place of worship. So he lost no time in seeking permission from his superior to have a chapel built in Welfareville. Permission was granted and on October 7, 1951, the cornerstone of the chapel whose patron is the Sacred Heart of Jesus was laid by the Most. Reverend Gabriel Reyes, D. D., Archbishop of Manila.
+                </p>
+                <p>
+                  A Catholic Association of Welfareville was formed under the leadership of Mrs. Luisa Vergara to raise the initial funds for the project. However, to build a chapel inside Welfareville, Fr. Jose had to secure permission from the Secretary of Health and Public Welfare. But an opinion of the Secretary of Justice said it could be done only if the title of the projected chapel was to be vested in by the Government. This did not meet with Fr. Jose's plans so the fund drive was stopped.
+                </p>
+                <p>
+                  Later, Fr. Jose learned of another legal opinion that a chapel could be built on government property provided it paid rental to the Government. Determined to have his chapel, he organized a new fund drive called Catholic Action of Welfareville under the leadership of Delia P. Medina. With the help of hundreds of generous dedicated souls, Fr. Jose was able to have a chapel constructed, with a grotto of the Our Lady of Lourdes behind it.
+                </p>
+                <p>
+                  The Most Reverend Rufino Santos, D. D. blessed the chapel on November 27, 1954. The image of the Sacred Heart which was brought by the Benedictine Sisters to the Welfareville grounds in 1943 and first installed in one of the rooms of the building for the children's nursery and Home for the Aged, was then enshrined at the main altar of the completed chapel.
+                </p>
+                <p>
+                  With the completion of the chapel, however, the ownership still remained unsettled. The case dragged on for years, until on March 26, 1966, Judge Cecilia Muñoz Palma ruled that the ownership, administration and operation of Welfareville chapel belonged to the Catholic Church of the Philippines, citing in effect that it was the House of God.
+                </p>
+                <p>
+                  Fr. Jose remained as chaplain until his transfer in 1961. He was succeed by Fr. Luciano Paguiligan who stayed until 1962. From 1962 to 1971, Fr. Dalmacio Eusebio, Jr. and Fr. Alfredo Sta. Ana followed each other as chaplain. In 1971, Fr. Juventino Romano assumed chaplaincy and initiated a move to convert Sacred Heart of Jesus from chaplaincy to a Parish. Unfortunately, he left for Papua New Guinea in 1978 before his project was realized.
+                </p>
+                <p>
+                  Fr. Jaime Mora took over the chaplaincy on October 15, 1978. He engineered further improvements in the chapel and revived the Chaplaincy Council. He raised funds for a new rectory and pursued the conversation of the chapel to a parish. On November 15, 1979, coinciding with the 25th anniversary of the Chaplaincy, His Eminence Jaime Cardinal Sin blessed the new rectory. During his celebration of the Mass, His Eminence announced that he was making the Sacred Heart Chaplaincy a Parish.
+                </p>
+                <p>
+                  The decree of erection was issued on November 29, 1979. The inauguration of the Parish and the formal installation of Fr. Jaime J. Mora as parish priest were held on December 19, 1979. Thus the long cherished dream became a reality. Fr. Mora stayed as Parish Priest until 1983 when he moved to his next assignment.
+                </p>
+                <p>
+                  Fr. Amando Ligon, a young and energetic priest from Bulacan served as parish priest from 1983 to 1991. Fr. Lorenzo J. Egos succeeded Fr. Ligon and served until 2006. Fr. Egos instituted the Perpetual Adoration Chapel in 1992 to give the parishioners a more private and solemn place for worship. He also initiated major physical improvements such as the renovation of the main altar.
+                </p>
+                <p>
+                  On December 20, 1997, another momentous event was added to the history of the Sacred Heart of Jesus Parish – the inauguration of the Immaculate Heart of Mary Parish Center (so named by His Eminence Cardinal Sin). The Parish Center took only eight months to complete. Today, it is a popular and ideal venue for seminars, conferences, meetings and social gatherings.
+                </p>
+                <p>
+                  The Sacred Heart of Jesus Parish has humbly taken the honor of being the site of the conferment rites of Papal Award (Pro Ecclesia et Pontifice) to six of its parishioners: Cory Duran, November 9, 1989; Jose Atienza, February 4, 1990; Norma Lim, March 4, 1993; Nena Orendain, Rosie Ramirez and Romer Montoya, September 20, 1999.
+                </p>
+                <p>
+                  Fourteen mandated organization under the umbrella of the Parish Pastoral Council work together towards the attainment of the VISION-MISSION of the parish which is aimed towards the implementation of the goals of PCP II, and PCM II, namely: to be a church of the poor; a community of disciples; and renewed lay evangelization.
+                </p>
+                <p>
+                  In 2006, when Fr. Wilmer Rosario became the parish priest, the PPC again revived a plan that had long been set aside. Renovation and expansion had been the plans of the previous parish priests, however, it was never realized. The opportunity to start the plan came and in 2007 renovation started. With the help of the different organizations and the parishioners, the plan came to fruition in 2009 when the church was finally finished.
+                </p>
+                <p>
+                  Thus, in November 29, 2009, the newly rebuilt Sacred Heart of Jesus Parish was consecrated in a lavish celebration and mass led by the then Archbishop of Manila, Gaudencio B. Cardinal Rosales, D.D.
+                </p>
+                <p>
+                  Through the untiring efforts of the chaplains and parish priests, the parish has achieved great improvements, despite the fact that it is considered as one of the poorest parishes in the Archdiocese of Manila. It now serves both material and spiritual needs of 80,000 parishioners, half of whom belong to the marginal portion of society.
+                </p>
+                <p>
+                  Truly its history has gone a long way and hope that it will continue to make greater progress with God at its helm.
+                </p>
+              </div>
             </CardBody>
           </Card>
 
