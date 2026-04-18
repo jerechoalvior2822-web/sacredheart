@@ -1672,25 +1672,44 @@ app.get('/api/messages', (req, res) => {
       FROM messages m
       LEFT JOIN users u ON m.user_id = u.id
       ORDER BY m.timestamp DESC
+      LIMIT 100
     `;
+    console.log('[Messages] Admin endpoint - fetching all messages');
+    
+    const queryTimeout = setTimeout(() => {
+      console.error('[Messages] Admin query timed out after 5 seconds');
+      if (!res.headersSent) {
+        res.status(504).json({ error: 'Query timeout' });
+      }
+    }, 5000);
+    
     db.query(query, [], (err, results) => {
+      clearTimeout(queryTimeout);
       if (err) {
-        console.error('[Messages] Admin endpoint error:', err.message);
-        res.status(500).json({ error: err.message });
+        console.error('[Messages] Admin endpoint error:', err.message, err.stack);
+        if (!res.headersSent) {
+          res.status(500).json({ error: err.message });
+        }
       } else {
-        console.log('[Messages] Admin fetched', (results || []).length, 'messages');
+        const count = (results || []).length;
+        console.log('[Messages] Admin fetched', count, 'messages');
         res.json(results || []);
       }
     });
   } else {
     // User view: fetch messages for specific user
     const query = 'SELECT id, user_id AS userId, text, sender, TO_CHAR(timestamp, \'YYYY-MM-DD"T"HH24:MI:SS\') as timestamp FROM messages WHERE user_id = $1 ORDER BY timestamp ASC';
+    console.log('[Messages] User endpoint - fetching for user:', userId);
+    
     db.query(query, [userId], (err, results) => {
       if (err) {
         console.error('[Messages] User endpoint error for user', userId, ':', err.message);
-        res.status(500).json({ error: err.message });
+        if (!res.headersSent) {
+          res.status(500).json({ error: err.message });
+        }
       } else {
-        console.log('[Messages] User', userId, 'fetched', (results || []).length, 'messages');
+        const count = (results || []).length;
+        console.log('[Messages] User', userId, 'fetched', count, 'messages');
         res.json(results || []);
       }
     });
