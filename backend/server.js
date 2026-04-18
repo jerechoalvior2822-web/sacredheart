@@ -1663,9 +1663,9 @@ app.get('/api/messages', (req, res) => {
     const query = `
       SELECT 
         m.id, 
-        m.user_id AS userId, 
-        u.name AS userName,
-        u.email AS userEmail,
+        m.user_id::INTEGER AS userId, 
+        COALESCE(u.name, 'Unknown User') AS userName,
+        COALESCE(u.email, '') AS userEmail,
         m.text, 
         m.sender, 
         TO_CHAR(m.timestamp, 'YYYY-MM-DD"T"HH24:MI:SS') as timestamp 
@@ -1693,6 +1693,7 @@ app.get('/api/messages', (req, res) => {
       } else {
         const count = (results || []).length;
         console.log('[Messages] Admin fetched', count, 'messages');
+        console.log('[Messages] Sample result:', results?.[0]);
         res.json(results || []);
       }
     });
@@ -1725,6 +1726,50 @@ app.post('/api/messages', (req, res) => {
     } else {
       res.json({ id: result?.[0]?.id, message: 'Message saved successfully' });
     }
+  });
+});
+
+// Debug endpoint to check messages and users data
+app.get('/api/debug/messages-data', (req, res) => {
+  const messagesQuery = 'SELECT m.id, m.user_id, m.text, m.sender, m.timestamp FROM messages ORDER BY m.timestamp DESC LIMIT 5';
+  const usersQuery = 'SELECT id, name, email FROM users LIMIT 5';
+  const joinQuery = `
+    SELECT 
+      m.id, 
+      m.user_id,
+      u.id as user_table_id,
+      u.name, 
+      u.email,
+      m.text, 
+      m.sender
+    FROM messages m
+    LEFT JOIN users u ON m.user_id = u.id
+    ORDER BY m.timestamp DESC
+    LIMIT 5
+  `;
+  
+  let debugData = {
+    messages: [],
+    users: [],
+    joined: [],
+    timestamp: new Date().toISOString()
+  };
+  
+  // Get messages
+  db.query(messagesQuery, [], (err, results) => {
+    if (!err) debugData.messages = results || [];
+    
+    // Get users
+    db.query(usersQuery, [], (err, results) => {
+      if (!err) debugData.users = results || [];
+      
+      // Get joined data
+      db.query(joinQuery, [], (err, results) => {
+        if (!err) debugData.joined = results || [];
+        
+        res.json(debugData);
+      });
+    });
   });
 });
 
