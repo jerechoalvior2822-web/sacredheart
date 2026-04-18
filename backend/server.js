@@ -952,7 +952,10 @@ app.get('/api/bookings/:id', (req, res) => {
 // Get booked dates for a service (for calendar blocking)
 app.get('/api/bookings/booked-dates', (req, res) => {
   const { service } = req.query;
-  let query = `SELECT DISTINCT TO_CHAR(date, 'YYYY-MM-DD') as date FROM bookings WHERE status NOT IN ('cancelled', 'rejected')`;
+  console.log('[Booked Dates] Query params:', { service });
+  
+  // Only block dates that have CONFIRMED bookings (not pending)
+  let query = `SELECT DISTINCT TO_CHAR(date, 'YYYY-MM-DD') as date FROM bookings WHERE status = 'confirmed'`;
   const params = [];
 
   if (service) {
@@ -960,14 +963,15 @@ app.get('/api/bookings/booked-dates', (req, res) => {
     params.push(String(service));
   }
 
+  console.log('[Booked Dates] Query:', query, 'Params:', params);
+
   db.query(query, params, (err, results) => {
     if (err) {
-      console.error('Error fetching booked dates:', err);
+      console.error('[Booked Dates] Error:', err);
       res.status(500).json({ error: err.message });
     } else {
-      // Return as unique date array
       const dates = (results || []).map(r => r.date);
-      console.log('Booked dates for service:', service, '=', dates);
+      console.log('[Booked Dates] Results for service:', service, '-> dates:', dates);
       res.json(dates);
     }
   });
