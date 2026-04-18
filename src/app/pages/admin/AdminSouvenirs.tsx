@@ -26,8 +26,6 @@ export function AdminSouvenirs() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    price: '',
-    stock: '',
   });
   const [imagePreview, setImagePreview] = useState<string>('');
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
@@ -56,8 +54,6 @@ export function AdminSouvenirs() {
     setFormData({
       name: item.name,
       description: item.description,
-      price: item.price.toString(),
-      stock: item.stock.toString(),
     });
     setSelectedImageFile(null);
     setImagePreview(item.image ? getAssetUrl(item.image) : '');
@@ -93,7 +89,7 @@ export function AdminSouvenirs() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.description || !formData.price || !formData.stock) {
+    if (!formData.name || !formData.description) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -101,8 +97,6 @@ export function AdminSouvenirs() {
     const formDataToSend = new FormData();
     formDataToSend.append('name', formData.name);
     formDataToSend.append('description', formData.description);
-    formDataToSend.append('price', formData.price);
-    formDataToSend.append('stock', formData.stock);
 
     if (selectedImageFile) {
       formDataToSend.append('image', selectedImageFile);
@@ -131,7 +125,7 @@ export function AdminSouvenirs() {
   const handleCancel = () => {
     setIsModalOpen(false);
     setEditingItem(null);
-    setFormData({ name: '', description: '', price: '', stock: '' });
+    setFormData({ name: '', description: '' });
     setImagePreview('');
     setSelectedImageFile(null);
   };
@@ -177,11 +171,7 @@ export function AdminSouvenirs() {
                   )}
                   <CardBody>
                     <h3 className="mb-2">{item.name}</h3>
-                    <p className="text-sm text-muted-foreground mb-3">{item.description}</p>
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="font-bold text-primary text-xl">₱{item.price.toLocaleString()}</span>
-                      <span className="text-sm text-muted-foreground">Stock: {item.stock}</span>
-                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">{item.description}</p>
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" onClick={() => handleEdit(item)} className="flex-1">
                         <Edit className="w-4 h-4 mr-2" />
@@ -282,25 +272,6 @@ export function AdminSouvenirs() {
                         required
                       />
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <Input
-                          type="number"
-                          label="Price (PHP)"
-                          value={formData.price}
-                          onChange={e => setFormData({ ...formData, price: e.target.value })}
-                          min="0"
-                          step="0.01"
-                          required
-                        />
-                        <Input
-                          type="number"
-                          label="Stock"
-                          value={formData.stock}
-                          onChange={e => setFormData({ ...formData, stock: e.target.value })}
-                          min="0"
-                          required
-                        />
-                      </div>
                       <div className="flex gap-2 justify-end">
                         <Button variant="outline" onClick={handleCancel} type="button">
                           Cancel
