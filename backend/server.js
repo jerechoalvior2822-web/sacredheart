@@ -1673,7 +1673,7 @@ app.get('/api/messages', (req, res) => {
       LEFT JOIN users u ON m.user_id = u.id
       ORDER BY m.timestamp DESC
     `;
-    db.query(query, (err, results) => {
+    db.query(query, [], (err, results) => {
       if (err) {
         console.error('[Messages] Admin endpoint error:', err.message);
         res.status(500).json({ error: err.message });
