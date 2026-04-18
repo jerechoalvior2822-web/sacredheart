@@ -981,9 +981,9 @@ app.get('/api/bookings/booked-dates', (req, res) => {
       console.log('[Booked Dates] Found confirmed bookings for dates:', dates);
       res.json(dates);
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error('[Booked Dates] Exception:', err);
-    res.status(500).json({ error: 'Server error: ' + err.message });
+    res.status(500).json({ error: 'Server error: ' + (err?.message || 'Unknown error') });
   }
 });
 
