@@ -636,7 +636,7 @@ export function AdminReports() {
                           </div>
                           <div>
                             <p className="text-sm text-muted-foreground">Total Donations</p>
-                            <p className="font-bold text-2xl">${reportSummary.donations.total}</p>
+                            <p className="font-bold text-2xl">₱{reportSummary.donations.total}</p>
                           </div>
                         </div>
                       </CardBody>
