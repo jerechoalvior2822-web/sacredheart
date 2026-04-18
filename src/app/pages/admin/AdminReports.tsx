@@ -26,10 +26,10 @@ export function AdminReports() {
   const [dateRange, setDateRange] = useState('month');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
-  const [bookingsData, setBookingsData] = useState<Array<{ month: string; count: number; revenue: number }>>([]);
+  const [bookingsData, setBookingsData] = useState<Array<{ month: string; count: number }>>([]);
   const [donationsData, setDonationsData] = useState<Array<{ month: string; amount: number }>>([]);
   const [reportSummary, setReportSummary] = useState({
-    bookings: { total: 0, revenue: 0, pending: 0, approved: 0, prevYearTotal: 0, prevYearRevenue: 0 },
+    bookings: { total: 0, pending: 0, approved: 0, prevYearTotal: 0 },
     donations: { total: 0, count: 0, avgDonation: 0, prevYearTotal: 0, prevYearCount: 0 },
     users: { total: 0, newThisMonth: 0, active: 0 },
   });
@@ -126,9 +126,8 @@ export function AdminReports() {
       const { start: rangeStart, end: rangeEnd } = getDateRange();
 
       // Process bookings data
-      const bookingsByMonth: Record<string, { month: string; count: number; revenue: number }> = {};
+      const bookingsByMonth: Record<string, { month: string; count: number }> = {};
       const bookingStatuses = { pending: 0, approved: 0 };
-      let totalRevenue = 0;
       let filteredBookingsCount = 0; // Track filtered bookings for summary
       const bookingsArray = Array.isArray(bookingsRaw) ? bookingsRaw : bookingsRaw.bookings || [];
 
@@ -149,15 +148,12 @@ export function AdminReports() {
         const month = dateObj.toLocaleString('default', { month: 'short' });
 
         if (!bookingsByMonth[month]) {
-          bookingsByMonth[month] = { month, count: 0, revenue: 0 };
+          bookingsByMonth[month] = { month, count: 0 };
         }
         bookingsByMonth[month].count += 1;
-        bookingsByMonth[month].revenue += parseInt(booking.price || 0);
 
         if (booking.status === 'pending') bookingStatuses.pending += 1;
         else if (booking.status === 'approved' || booking.status === 'confirmed') bookingStatuses.approved += 1;
-
-        totalRevenue += parseInt(booking.price || 0);
       });
 
       // Process donations data
@@ -245,22 +241,19 @@ export function AdminReports() {
           const nextIdx = (currentIdx + i) % 12;
           const variance = 1 + (Math.random() * 0.1 - 0.05); // 5% variance
           const forecastedCount = Math.round(recentAvg * variance);
-          const forecastedRevenue = Math.round((sortedBookings[sortedBookings.length - 1].revenue || 0) * variance);
           sortedBookings.push({
             month: nextMonths[nextIdx],
             count: forecastedCount,
-            revenue: forecastedRevenue
           });
         }
       }
 
-      setBookingsData(sortedBookings as Array<{ month: string; count: number; revenue: number }>);
+      setBookingsData(sortedBookings as Array<{ month: string; count: number }>);
       setDonationsData(sortedDonations as Array<{ month: string; amount: number }>);
 
       // Calculate previous year data for comparison
       const { start: prevStart, end: prevEnd } = getPreviousYearDateRange();
       let prevYearBookings = 0;
-      let prevYearRevenue = 0;
       let prevYearDonations = 0;
       let prevYearDonationCount = 0;
 
@@ -271,7 +264,6 @@ export function AdminReports() {
                        new Date();
         if (dateObj >= prevStart && dateObj <= prevEnd) {
           prevYearBookings += 1;
-          prevYearRevenue += parseInt(booking.price || 0);
         }
       });
 
@@ -288,11 +280,9 @@ export function AdminReports() {
       setReportSummary({
         bookings: {
           total: filteredBookingsCount,
-          revenue: totalRevenue,
           pending: bookingStatuses.pending,
           approved: bookingStatuses.approved,
           prevYearTotal: prevYearBookings,
-          prevYearRevenue: prevYearRevenue,
         },
         donations: {
           total: filteredDonationsTotal,
@@ -361,7 +351,6 @@ export function AdminReports() {
       if (reportType === 'bookings') {
         const summaryData = [
           ['Total Bookings', `${reportSummary.bookings.total}`],
-          ['Total Revenue', `₱${reportSummary.bookings.revenue.toLocaleString()}`],
           ['Pending', `${reportSummary.bookings.pending}`],
           ['Approved', `${reportSummary.bookings.approved}`],
           ['Last Year Total', `${reportSummary.bookings.prevYearTotal}`],
@@ -388,7 +377,6 @@ export function AdminReports() {
         pdf.rect(20, yPosition - 4, 170, 6, 'F');
         pdf.text('Month', 25, yPosition + 1);
         pdf.text('Bookings', 70, yPosition + 1);
-        pdf.text('Revenue', 110, yPosition + 1);
         pdf.text('Forecast', 160, yPosition + 1);
 
         yPosition += 8;
@@ -403,7 +391,6 @@ export function AdminReports() {
           const isForecast = idx >= bookingsData.length - 2;
           pdf.text(item.month, 25, yPosition);
           pdf.text(String(item.count), 70, yPosition);
-          pdf.text(`₱${item.revenue.toLocaleString()}`, 110, yPosition);
           pdf.text(isForecast ? 'Yes' : 'No', 160, yPosition);
           yPosition += 6;
         });
@@ -564,7 +551,7 @@ export function AdminReports() {
             {/* Summary Cards */}
             {reportType === 'bookings' && (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -587,26 +574,6 @@ export function AdminReports() {
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                  >
-                    <Card>
-                      <CardBody>
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="p-3 rounded-lg bg-accent/10">
-                            <DollarSign className="w-6 h-6 text-accent" />
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">Total Revenue</p>
-                            <p className="font-bold text-2xl">${reportSummary.bookings.revenue}</p>
-                          </div>
-                        </div>
-                      </CardBody>
-                    </Card>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                   >
                     <Card>
@@ -616,36 +583,8 @@ export function AdminReports() {
                             <Calendar className="w-6 h-6 text-yellow-600" />
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground">Last Year Total</p>
-                            <p className="font-bold text-2xl">{reportSummary.bookings.prevYearTotal}</p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {reportSummary.bookings.total - reportSummary.bookings.prevYearTotal > 0 ? '+' : ''}
-                              {reportSummary.bookings.total - reportSummary.bookings.prevYearTotal} vs last year
-                            </p>
-                          </div>
-                        </div>
-                      </CardBody>
-                    </Card>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <Card>
-                      <CardBody>
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="p-3 rounded-lg bg-green-500/10">
-                            <Calendar className="w-6 h-6 text-green-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">Last Year Total</p>
-                            <p className="font-bold text-2xl">{reportSummary.bookings.prevYearTotal}</p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {reportSummary.bookings.total - reportSummary.bookings.prevYearTotal > 0 ? '+' : ''}
-                              {reportSummary.bookings.total - reportSummary.bookings.prevYearTotal} vs last year
-                            </p>
+                            <p className="text-sm text-muted-foreground">Approved</p>
+                            <p className="font-bold text-2xl">{reportSummary.bookings.approved}</p>
                           </div>
                         </div>
                       </CardBody>
@@ -657,19 +596,17 @@ export function AdminReports() {
                 {bookingsData.length > 0 ? (
                   <Card>
                     <CardHeader>
-                      <h2>Bookings & Revenue Trend</h2>
+                      <h2>Bookings Trend</h2>
                     </CardHeader>
                     <CardBody>
                       <ResponsiveContainer width="100%" height={400}>
                         <BarChart data={bookingsData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                           <XAxis dataKey="month" stroke="#F5E6D3" />
-                          <YAxis yAxisId="left" stroke="#F5E6D3" label={{ value: 'Bookings', angle: -90, position: 'insideLeft' }} />
-                          <YAxis yAxisId="right" orientation="right" stroke="#F5E6D3" label={{ value: 'Revenue (₱)', angle: 90, position: 'insideRight' }} />
+                          <YAxis stroke="#F5E6D3" label={{ value: 'Bookings', angle: -90, position: 'insideLeft' }} />
                           <Tooltip contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #C4954A', color: '#F5E6D3' }} />
                           <Legend wrapperStyle={{ color: '#F5E6D3' }} />
-                          <Bar yAxisId="left" dataKey="count" fill="#FF6B9D" name="Bookings" label={{ fill: '#F5E6D3', fontSize: 12 }} />
-                          <Bar yAxisId="right" dataKey="revenue" fill="#C4954A" name="Revenue (₱)" label={{ fill: '#F5E6D3', fontSize: 12 }} />
+                          <Bar dataKey="count" fill="#FF6B9D" name="Bookings" label={{ fill: '#F5E6D3', fontSize: 12 }} />
                         </BarChart>
                       </ResponsiveContainer>
                     </CardBody>
