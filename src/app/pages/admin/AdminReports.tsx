@@ -3,7 +3,7 @@ import { AdminLayout } from '../../components/AdminLayout';
 import { Card, CardBody, CardHeader } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { Select } from '../../components/Input';
-import { FileText, Calendar, DollarSign, Users } from 'lucide-react';
+import { FileText, Calendar, Banknote, Users } from 'lucide-react';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
@@ -632,7 +632,7 @@ export function AdminReports() {
                       <CardBody>
                         <div className="flex items-center gap-3 mb-3">
                           <div className="p-3 rounded-lg bg-accent/10">
-                            <DollarSign className="w-6 h-6 text-accent" />
+                            <Banknote className="w-6 h-6 text-accent" />
                           </div>
                           <div>
                             <p className="text-sm text-muted-foreground">Total Donations</p>
@@ -672,7 +672,7 @@ export function AdminReports() {
                       <CardBody>
                         <div className="flex items-center gap-3 mb-3">
                           <div className="p-3 rounded-lg bg-chart-2/10">
-                            <DollarSign className="w-6 h-6 text-chart-2" />
+                            <Banknote className="w-6 h-6 text-chart-2" />
                           </div>
                           <div>
                             <p className="text-sm text-muted-foreground">Avg Donation</p>
@@ -694,7 +694,7 @@ export function AdminReports() {
                       <CardBody>
                         <div className="flex items-center gap-3 mb-3">
                           <div className="p-3 rounded-lg bg-green-500/10">
-                            <DollarSign className="w-6 h-6 text-green-600" />
+                            <Banknote className="w-6 h-6 text-green-600" />
                           </div>
                           <div>
                             <p className="text-sm text-muted-foreground">Last Year Total</p>
