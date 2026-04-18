@@ -952,29 +952,39 @@ app.get('/api/bookings/:id', (req, res) => {
 // Get booked dates for a service (for calendar blocking)
 app.get('/api/bookings/booked-dates', (req, res) => {
   const { service } = req.query;
-  console.log('[Booked Dates] Query params:', { service });
+  console.log('[Booked Dates] Query service param:', service);
   
-  // Only block dates that have CONFIRMED bookings (not pending)
-  let query = `SELECT DISTINCT TO_CHAR(date, 'YYYY-MM-DD') as date FROM bookings WHERE status = 'confirmed'`;
-  const params = [];
+  try {
+    // Only block dates that have CONFIRMED bookings (not pending)
+    let query = `SELECT DISTINCT date FROM bookings WHERE status = 'confirmed'`;
+    let params = [];
 
-  if (service) {
-    query += ' AND service = $1';
-    params.push(String(service));
-  }
-
-  console.log('[Booked Dates] Query:', query, 'Params:', params);
-
-  db.query(query, params, (err, results) => {
-    if (err) {
-      console.error('[Booked Dates] Error:', err);
-      res.status(500).json({ error: err.message });
-    } else {
-      const dates = (results || []).map(r => r.date);
-      console.log('[Booked Dates] Results for service:', service, '-> dates:', dates);
-      res.json(dates);
+    if (service) {
+      query += ` AND service = $1`;
+      params.push(String(service));
     }
-  });
+
+    console.log('[Booked Dates] Executing query:', query, 'with params:', params);
+
+    db.query(query, params, (err, results) => {
+      if (err) {
+        console.error('[Booked Dates] Database error:', err.message, err.code);
+        return res.status(500).json({ error: 'Failed to fetch booked dates: ' + err.message });
+      }
+
+      // Convert dates to YYYY-MM-DD format
+      const dates = (results || []).map(r => {
+        const date = new Date(r.date);
+        return date.toISOString().split('T')[0];
+      });
+      
+      console.log('[Booked Dates] Found confirmed bookings for dates:', dates);
+      res.json(dates);
+    });
+  } catch (err: any) {
+    console.error('[Booked Dates] Exception:', err);
+    res.status(500).json({ error: 'Server error: ' + err.message });
+  }
 });
 
 // POST route to create a new booking
